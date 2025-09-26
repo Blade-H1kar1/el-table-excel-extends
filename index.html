@@ -338,13 +338,13 @@
 
     <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/el-table-excel-extends/dist/index.min.js"></script>
 
-    <script type="module">
-      import ElTableExcelExtends from "../dist/index.js";
+    <script>
       new Vue({
         el: "#app",
         components: {
-          "el-table-excel-extends": ElTableExcelExtends,
+          "el-table-excel-extends": window.ElTableExcelExtends,
         },
         data() {
           return {
