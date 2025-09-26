@@ -1,0 +1,57 @@
+{
+  "name": "el-table-excel-extends",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "一个为Element UI表格提供Excel类似功能的Vue组件，支持复制、粘贴、填充、撤销重做等功能",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "unpkg": "dist/index.min.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "release": "standard-version"
+  },
+  "keywords": [
+    "vue",
+    "el-table-excel-extends",
+    "el-table",
+    "excel",
+    "copy",
+    "paste",
+    "fill",
+    "undo",
+    "redo"
+  ],
+  "author": "wyl",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Blade-H1kar1/el-table-excel-extends.git"
+  },
+  "peerDependencies": {
+    "vue": "^2.6.0",
+    "element-ui": "^2.15.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.9.6",
+    "rollup-plugin-vue": "^5.1.9",
+    "lodash-es": "^4.17.21",
+    "dayjs": "^1.11.13",
+    "standard-version": "^9.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": ""
+}
