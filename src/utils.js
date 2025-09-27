@@ -532,14 +532,9 @@ export function getBoundaryCellFromMousePosition(event, tableEl) {
   // 检测鼠标所在的容器
   const containerInfo = detectContainerFromMousePosition(event, tableEl);
   if (!containerInfo.container) return null;
-
-  if (
-    isInnerCell(event, tableEl) &&
-    !tableEl.querySelector(".el-table__header-wrapper").contains(event.target)
-  ) {
+  if (isInnerCell(event, tableEl) && event.target.closest(".el-table__body")) {
     return getCellInfoFromEvent(event, tableEl, containerInfo.type);
   }
-
   // 获取容器内的表格体
   const tbody = containerInfo.container.querySelector("tbody");
   if (!tbody) return null;
@@ -627,7 +622,7 @@ function detectContainerFromMousePosition(event, tableEl) {
   // 检测左固定列
   if (fixedLeft) {
     const leftRect = getCachedBoundingClientRect(fixedLeft);
-    if (mouseX >= leftRect.left && mouseX <= leftRect.right) {
+    if (mouseX <= leftRect.right) {
       const fixedBodyWrapper = fixedLeft.querySelector(
         ".el-table__fixed-body-wrapper"
       );
@@ -638,7 +633,7 @@ function detectContainerFromMousePosition(event, tableEl) {
   // 检测右固定列
   if (fixedRight) {
     const rightRect = getCachedBoundingClientRect(fixedRight);
-    if (mouseX >= rightRect.left && mouseX <= rightRect.right) {
+    if (mouseX >= rightRect.left) {
       const fixedBodyWrapper = fixedRight.querySelector(
         ".el-table__fixed-body-wrapper"
       );

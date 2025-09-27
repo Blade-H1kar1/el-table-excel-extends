@@ -13,7 +13,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "release": "standard-version"
+    "release": "standard-version",
+    "deploy": "gh-pages -d example"
   },
   "keywords": [
     "vue",
@@ -30,25 +31,22 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Blade-H1kar1/el-table-excel-extends.git"
+    "url": ""
   },
   "peerDependencies": {
-    "vue": "^2.6.0",
-    "element-ui": "^2.15.0"
+    "element-ui": "^2.15.0",
+    "vue": "^2.6.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
+    "dayjs": "^1.11.13",
+    "gh-pages": "^6.3.0",
+    "lodash-es": "^4.17.21",
     "rollup": "^4.9.6",
     "rollup-plugin-vue": "^5.1.9",
-    "lodash-es": "^4.17.21",
-    "dayjs": "^1.11.13",
     "standard-version": "^9.5.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": ""
   },
   "bugs": {
     "url": ""

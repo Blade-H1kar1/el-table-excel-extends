@@ -117,6 +117,7 @@ export default {
       // 拖拽状态
       dragState: {
         type: null, // 'select','headerSelect', 'fill'
+        startClickInfo: null,
         startCell: null,
         endCell: null,
         headerStartColumnIndex: null,
@@ -571,6 +572,7 @@ export default {
 
       // 检测点击类型并分发处理
       const clickInfo = this.detectClickType(event, tableEl);
+      this.dragState.startClickInfo = clickInfo;
       this.handleUnifiedMouseDown(event, clickInfo);
 
       tableEl.style.userSelect = "none";
@@ -639,7 +641,7 @@ export default {
       this.dragState.startCell = cellInfo;
 
       // 获取列配置信息
-      const columnConfig = this.getColumnByIndexFromTable(cellInfo.columnIndex);
+      const columnConfig = this.getColumnByIndex(cellInfo.columnIndex);
 
       // 检查列配置是否存在type属性，如果存在则选择整行
       if (
@@ -682,10 +684,25 @@ export default {
 
       // 检测边界并处理自动滚动
       const scrollDirection = detectScrollDirection(event, this.tableWrapper());
-      if (scrollDirection) {
-        this.startAutoScroll(scrollDirection);
+
+      // 表头拖拽不能进行上下滚动滚动
+      if (this.dragState.startClickInfo.type === "header") {
+        if (
+          scrollDirection &&
+          (scrollDirection.left || scrollDirection.right)
+        ) {
+          if (scrollDirection) {
+            this.startAutoScroll(scrollDirection);
+          } else {
+            this.stopAutoScroll();
+          }
+        }
       } else {
-        this.stopAutoScroll();
+        if (scrollDirection) {
+          this.startAutoScroll(scrollDirection);
+        } else {
+          this.stopAutoScroll();
+        }
       }
 
       // 根据拖拽类型分发处理
@@ -742,7 +759,6 @@ export default {
         ) {
           return;
         }
-
         // 更新缓存
         this.lastCellInfo = cellInfo;
 
@@ -751,7 +767,7 @@ export default {
           this.dragState.endCell = cellInfo;
 
           // 检查起始列是否具有type属性
-          const startColumnConfig = this.getColumnByIndexFromTable(
+          const startColumnConfig = this.getColumnByIndex(
             startCell.columnIndex
           );
 
@@ -818,6 +834,9 @@ export default {
       const { type } = this.dragState;
       if (!type) return;
       this.dragState.type = null;
+      // 停止自动滚动
+      this.stopAutoScroll();
+      this.updateOverlays();
       // 根据拖拽类型分发处理
       if (type === "fill") {
         this.handleFillDragEnd(event);
@@ -831,8 +850,6 @@ export default {
         this.dragState.endCell = null;
         // 清空拖拽缓存
         this.lastCellInfo = null;
-        // 停止自动滚动
-        this.stopAutoScroll();
         // 移除全局事件监听
         this.removeTempGlobalEvents();
       }
@@ -928,7 +945,7 @@ export default {
           if (this.getCellTextMethod) {
             try {
               const row = this.getRowDataByIndex(rowIndex);
-              const column = this.getColumnByIndexFromTable(columnIndex);
+              const column = this.getColumnByIndex(columnIndex);
               textRows[rowIndex][columnIndex] = this.getCellTextMethod({
                 row,
                 column,
