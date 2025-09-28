@@ -3,6 +3,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import vue from "rollup-plugin-vue";
 import copy from "rollup-plugin-copy";
+import babel from "@rollup/plugin-babel";
 
 export default [
   // ES Module build
@@ -22,6 +23,11 @@ export default [
       commonjs(),
       vue({
         needMap: false,
+      }),
+      babel({
+        babelHelpers: "bundled",
+        exclude: "node_modules/**",
+        extensions: [".js", ".vue"],
       }),
       terser({
         sourceMap: false,
@@ -56,6 +62,11 @@ export default [
       commonjs(),
       vue({
         needMap: false,
+      }),
+      babel({
+        babelHelpers: "bundled",
+        exclude: "node_modules/**",
+        extensions: [".js", ".vue"],
       }),
       terser({
         sourceMap: false,
