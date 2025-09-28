@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/Blade-H1kar1/el-table-excel-extends/compare/v1.1.0...v1.1.1) (2025-09-28)
+
+
+### Bug Fixes
+
+* 配置Babel处理 ([cea5acf](https://github.com/Blade-H1kar1/el-table-excel-extends/commit/cea5acf79fdc9ca7ef02220049c7f365cb58abaf))
+
 ## 1.1.0 (2025-09-28)
 
 
