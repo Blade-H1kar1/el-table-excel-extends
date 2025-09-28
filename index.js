@@ -12,19 +12,22 @@ function createCellInfo(rowIndex, columnIndex) {
 }
 
 function getCellText(element) {
+    var _element$textContent;
     if (!element) return "";
     const selectTags = element.querySelector(".el-select__tags");
     if (selectTags) {
+        var _selectTags$textConte;
         const tagTexts = selectTags.querySelectorAll(".el-select__tags-text");
         if (tagTexts.length > 0) {
             const texts = [];
             for (let i = 0; i < tagTexts.length; i++) {
-                const text = tagTexts[i].textContent?.trim();
+                var _tagTexts$i$textConte;
+                const text = (_tagTexts$i$textConte = tagTexts[i].textContent) === null || _tagTexts$i$textConte === void 0 ? void 0 : _tagTexts$i$textConte.trim();
                 if (text) texts.push(text);
             }
             return texts.join(",");
         }
-        return selectTags.textContent?.trim() || "";
+        return ((_selectTags$textConte = selectTags.textContent) === null || _selectTags$textConte === void 0 ? void 0 : _selectTags$textConte.trim()) || "";
     }
     const switchElement = element.querySelector(".el-switch");
     if (switchElement) {
@@ -34,7 +37,8 @@ function getCellText(element) {
     if (checkedRadio) {
         const label = checkedRadio.querySelector(".el-radio__label");
         if (label) {
-            const text = label.textContent?.trim();
+            var _label$textContent;
+            const text = (_label$textContent = label.textContent) === null || _label$textContent === void 0 ? void 0 : _label$textContent.trim();
             if (text) return text;
         }
     }
@@ -44,7 +48,8 @@ function getCellText(element) {
         for (let i = 0; i < checkedCheckboxes.length; i++) {
             const label = checkedCheckboxes[i].querySelector(".el-checkbox__label");
             if (label) {
-                const text = label.textContent?.trim();
+                var _label$textContent2;
+                const text = (_label$textContent2 = label.textContent) === null || _label$textContent2 === void 0 ? void 0 : _label$textContent2.trim();
                 if (text) checkedTexts.push(text);
             }
         }
@@ -66,7 +71,7 @@ function getCellText(element) {
     }
     const cascader = element.querySelector(".el-cascader");
     if (cascader) return;
-    return element.textContent?.trim() || "";
+    return ((_element$textContent = element.textContent) === null || _element$textContent === void 0 ? void 0 : _element$textContent.trim()) || "";
 }
 
 function getCellIndexFromElement(cellElement, tableEl, fixedType = "body") {
@@ -298,7 +303,8 @@ function calculateTargetIndex(mousePosition, wrapperStart, wrapperEnd, visibleEl
 }
 
 function getCellInfoFromEvent(event, tableEl, containerType) {
-    let target = event.target?.classList?.contains("el-table__cell") ? event.target : event?.target?.closest(".el-table__cell");
+    var _event$target, _event$target$classLi, _event$target2;
+    let target = (_event$target = event.target) !== null && _event$target !== void 0 && (_event$target$classLi = _event$target.classList) !== null && _event$target$classLi !== void 0 && _event$target$classLi.contains("el-table__cell") ? event.target : event === null || event === void 0 ? void 0 : (_event$target2 = event.target) === null || _event$target2 === void 0 ? void 0 : _event$target2.closest(".el-table__cell");
     if (!target) return null;
     const {rowIndex: rowIndex, columnIndex: columnIndex} = getCellIndexFromElement(target, tableEl, containerType);
     return {
@@ -409,9 +415,10 @@ function getHeaderText(tableEl, columnIndex) {
     if (!headerRow) return "";
     const headerCells = headerRow.querySelectorAll("th");
     if (columnIndex >= 0 && columnIndex < headerCells.length) {
+        var _cellContent$textCont;
         const headerCell = headerCells[columnIndex];
         const cellContent = headerCell.querySelector(".content");
-        return cellContent ? cellContent.textContent?.trim() || "" : "";
+        return cellContent ? ((_cellContent$textCont = cellContent.textContent) === null || _cellContent$textCont === void 0 ? void 0 : _cellContent$textCont.trim()) || "" : "";
     }
     return "";
 }
@@ -1017,12 +1024,13 @@ class CellObserver {
         return resultCells;
     }
     createResizeObserver(cells) {
+        var _this$tableEl;
         this.stopObserving();
         if (cells.length === 0) return;
         this.resizeObserver = new ResizeObserver(entries => {
             this.updated();
         });
-        const tbody = this.tableEl?.querySelector("tbody");
+        const tbody = (_this$tableEl = this.tableEl) === null || _this$tableEl === void 0 ? void 0 : _this$tableEl.querySelector("tbody");
         if (tbody) {
             this.resizeObserver.observe(tbody);
             this.observedElements.add(tbody);
@@ -1037,7 +1045,7 @@ class CellObserver {
     }
     needsObserverUpdate(newCells, type = "selected") {
         const currentCells = type === "selected" ? this.currentSelectedCells : this.currentCopiedCells;
-        if (!currentCells || currentCells.length !== (newCells?.length || 0)) {
+        if (!currentCells || currentCells.length !== ((newCells === null || newCells === void 0 ? void 0 : newCells.length) || 0)) {
             return true;
         }
         const currentSet = new Set(currentCells.map(cell => `${cell.rowIndex}-${cell.columnIndex}`));
@@ -2423,13 +2431,14 @@ var dataProcessor = {
     computed: {
         tableData() {
             const tableRef = findComponentInstance(this, "ElTable");
-            return tableRef?.data || [];
+            return (tableRef === null || tableRef === void 0 ? void 0 : tableRef.data) || [];
         },
         flatTableData() {
             return toTreeArray(this.tableData);
         },
         rowCount() {
-            return this.flatTableData?.length || 0;
+            var _this$flatTableData;
+            return ((_this$flatTableData = this.flatTableData) === null || _this$flatTableData === void 0 ? void 0 : _this$flatTableData.length) || 0;
         }
     },
     methods: {
@@ -2488,7 +2497,7 @@ var dataProcessor = {
                 const row = this.getRowDataByIndex(rowIndex);
                 const column = this.getColumnByIndex(columnIndex);
                 if (!row || !column) return null;
-                const prop = column?.property;
+                const prop = column === null || column === void 0 ? void 0 : column.property;
                 if (this.getCellValueMethod) {
                     return this.getCellValueMethod({
                         row: row,
@@ -2510,7 +2519,7 @@ var dataProcessor = {
             try {
                 const row = this.getRowDataByIndex(rowIndex);
                 const column = this.getColumnByIndex(columnIndex);
-                const prop = column?.property;
+                const prop = column === null || column === void 0 ? void 0 : column.property;
                 if (!row || !column || !prop) return false;
                 if (this.setCellValueMethod) {
                     this.setCellValueMethod({
@@ -2939,7 +2948,7 @@ var script = {
         },
         tableWrapper() {
             const tableEl = this.getTableElement();
-            return tableEl?.querySelector(".el-table__body-wrapper") || tableEl;
+            return (tableEl === null || tableEl === void 0 ? void 0 : tableEl.querySelector(".el-table__body-wrapper")) || tableEl;
         },
         cleanup() {
             this.removeAllEvents();
@@ -3302,7 +3311,8 @@ var script = {
             }
         },
         handleHeaderDragMove(event) {
-            const columnIndex = getBoundaryCellFromMousePosition(event, this.getTableElement())?.columnIndex;
+            var _getBoundaryCellFromM;
+            const columnIndex = (_getBoundaryCellFromM = getBoundaryCellFromMousePosition(event, this.getTableElement())) === null || _getBoundaryCellFromM === void 0 ? void 0 : _getBoundaryCellFromM.columnIndex;
             if (columnIndex === null || columnIndex === undefined) return;
             const {headerStartColumnIndex: headerStartColumnIndex} = this.dragState;
             const minCol = Math.min(headerStartColumnIndex, columnIndex);
