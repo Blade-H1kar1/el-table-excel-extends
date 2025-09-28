@@ -45,6 +45,7 @@
     "gh-pages": "^6.3.0",
     "lodash-es": "^4.17.21",
     "rollup": "^4.9.6",
+    "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-vue": "^5.1.9",
     "standard-version": "^9.5.0"
   },

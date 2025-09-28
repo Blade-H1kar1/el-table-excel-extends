@@ -5,3 +5,4 @@ npm-debug.log*
 # Build outputs
 dist/
 build/
+example/index.js

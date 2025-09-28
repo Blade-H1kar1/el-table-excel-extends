@@ -2,11 +2,13 @@
 
 一个为 Element UI 表格提供 Excel 类似功能的 Vue 组件，支持区域选择、复制粘贴、智能填充、撤销重做等丰富的表格操作功能。
 
+在线示例: https://blade-h1kar1.github.io/el-table-excel-extends
+
 ## 功能特性
 
 - ✅ **区域选择**: 支持单元格、行、列、全表的灵活选择
 - ✅ **复制粘贴**: 支持单元格、行、列的复制粘贴操作，兼容Excel格式
-- ✅ **智能填充**: 类似 Excel 的拖拽填充功能，支持数字序列和文本复制
+- ✅ **智能填充**: 类似 Excel 的拖拽填充功能，支持多种智能模式：数值序列、日期序列、文本+数字序列、自定义列表序列和复制模式
 - ✅ **撤销重做**: 支持操作历史的撤销和重做
 - ✅ **键盘快捷键**: 支持 Ctrl+C、Ctrl+V、Ctrl+Z、Ctrl+A 等快捷键
 - ✅ **自动滚动**: 选择区域超出视窗时自动滚动
@@ -15,74 +17,6 @@
 
 ```bash
 npm install el-table-excel-extends
-```
-
-## 基础用法
-
-```vue
-<template>
-  <el-table-excel-extends
-    :copy="true"
-    :paste="true"
-    :fill="true"
-    :undo="true"
-    @excel-copy="handleCopy"
-    @excel-paste="handlePaste"
-  >
-    <el-table
-      ref="table"
-      :data="tableData"
-      border
-      height="400"
-    >
-      <el-table-column prop="name" label="姓名" width="120">
-        <template slot-scope="scope">
-          <el-input v-model="scope.row.name" size="mini" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="age" label="年龄" width="100">
-        <template slot-scope="scope">
-          <el-input-number v-model="scope.row.age" size="mini" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="status" label="状态" width="120">
-        <template slot-scope="scope">
-          <el-select v-model="scope.row.status" size="mini">
-            <el-option label="启用" :value="true" />
-            <el-option label="禁用" :value="false" />
-          </el-select>
-        </template>
-      </el-table-column>
-    </el-table>
-  </el-table-excel-extends>
-</template>
-
-<script>
-import ElTableExcelExtends from 'el-table-excel-extends'
-
-export default {
-  components: {
-    ElTableExcelExtends
-  },
-  data() {
-    return {
-      tableData: [
-        { name: '张三', age: 18, status: true },
-        { name: '李四', age: 22, status: false },
-        { name: '王五', age: 25, status: true }
-      ]
-    }
-  },
-  methods: {
-    handleCopy(data) {
-      console.log('复制数据:', data)
-    },
-    handlePaste(data) {
-      console.log('粘贴数据:', data)
-    }
-  }
-}
-</script>
 ```
 
 ## 快捷键
@@ -105,7 +39,8 @@ export default {
 | Ctrl+Z                   | 撤销       | 撤销上一步操作               |
 | Ctrl+Y、Ctrl + Shift + Z | 重做       | 重做下一步操作               |
 | **填充操作**             |            |                              |
-| 拖拽填充柄               | 智能填充   | 拖拽右下角小方块进行填充     |
+| 拖拽填充柄               | 智能填充   | 拖拽右下角小方块进行智能填充 |
+| Ctrl + 拖拽填充柄        | 复制填充   | 按住Ctrl键拖拽进行复制填充   |
 
 ## 配置参数
 
@@ -115,6 +50,7 @@ export default {
 | paste               | Boolean  | true   | 是否启用粘贴功能                                         |
 | cut                 | Boolean  | true   | 是否启用剪切功能                                         |
 | fill                | Boolean  | true   | 是否启用智能填充功能                                     |
+| fillCustomLists     | Array    | []     | 自定义填充列表，用于智能填充的自定义序列                 |
 | undo                | Boolean  | true   | 是否启用撤销功能                                         |
 | redo                | Boolean  | true   | 是否启用重做功能                                         |
 | selection           | Boolean  | true   | 是否启用区域选择功能                                     |
@@ -138,7 +74,7 @@ export default {
 | excel-copy   | { copiedCells, isCut, includeHeaders } | 复制操作完成时触发 |
 | excel-paste  | { pastedCells, isCutMode }             | 粘贴操作完成时触发 |
 | excel-clear  | { clearedCells, clearType }            | 清空单元格时触发   |
-| excel-fill   | { filledCells }                        | 填充操作完成时触发 |
+| excel-fill   | { fillCells }                          | 填充操作完成时触发 |
 | excel-undo   | { affectedCells }                      | 撤销操作完成时触发 |
 | excel-redo   | { affectedCells }                      | 重做操作完成时触发 |
 | excel-select | { selectedCells, bounds }              | 选择区域变化时触发 |
@@ -154,6 +90,38 @@ export default {
 | updateOverlays                                  | 更新所有遮罩层（适用于遮罩层样式错乱） |
 | clearCellSelection                              | 清除当前选择                           |
 | selectCells({ minRow, maxRow, minCol, maxCol }) | 选择指定区域                           |
+
+## 基础用法
+
+```vue
+<template>
+  <el-table-excel-extends>
+    <el-table
+      ref="table"
+      :data="tableData"
+      border
+      height="400"
+    >
+      <el-table-column prop="name" label="姓名" width="120">
+      </el-table-column>
+      <el-table-column prop="age" label="年龄" width="100">
+      </el-table-column>
+      <el-table-column prop="status" label="状态" width="120">
+      </el-table-column>
+    </el-table>
+  </el-table-excel-extends>
+</template>
+
+<script>
+import ElTableExcelExtends from 'el-table-excel-extends'
+
+export default {
+  components: {
+    ElTableExcelExtends
+  },
+}
+</script>
+```
 
 ## 自定义方法
 
@@ -251,7 +219,95 @@ export default {
 </script>
 ```
 
-### 文本映射配置
+## 智能填充详细说明
+
+智能填充功能支持多种模式，能够根据选中数据的模式自动识别并生成相应的填充数据。
+
+### 支持的填充模式
+
+#### 1. 数值序列填充
+
+**等差数列**：自动识别数字间的等差关系并延续
+```
+选中: 1, 3, 5
+拖拽填充: 7, 9, 11, 13...
+```
+
+**等比数列**：自动识别数字间的等比关系并延续
+```
+选中: 2, 4, 8
+拖拽填充: 16, 32, 64, 128...
+```
+
+#### 2. 日期序列填充
+
+支持常见日期格式的智能识别和填充：
+```
+选中: 2024-01-01, 2024-01-02
+拖拽填充: 2024-01-03, 2024-01-04, 2024-01-05...
+
+选中: 2024/01/01, 2024/01/03
+拖拽填充: 2024/01/05, 2024/01/07, 2024/01/09...
+```
+
+#### 3. 文本+数字序列填充
+
+自动识别文本前缀+数字后缀的模式：
+```
+选中: 项目1, 项目2, 项目3
+拖拽填充: 项目4, 项目5, 项目6...
+
+选中: Task10, Task15
+拖拽填充: Task20, Task25, Task30...
+```
+
+#### 4. 自定义列表序列填充
+
+通过配置 `fillCustomLists` 属性支持自定义序列：
+```vue
+<template>
+  <el-table-excel-extends :fill-custom-lists="customLists">
+    <el-table :data="tableData">
+      <!-- 表格列定义 -->
+    </el-table>
+  </el-table-excel-extends>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      customLists: [
+        ['春', '夏', '秋', '冬'],           // 季节序列
+        ['周一', '周二', '周三', '周四', '周五', '周六', '周日'], // 星期序列
+        ['A', 'B', 'C', 'D', 'E'],         // 字母序列
+        ['红', '橙', '黄', '绿', '蓝', '靛', '紫'] // 颜色序列
+      ]
+    }
+  }
+}
+</script>
+```
+
+使用示例：
+```
+选中: 春, 夏
+拖拽填充: 秋, 冬, 春, 夏... (循环)
+
+选中: 周一, 周三
+拖拽填充: 周五, 周日, 周二, 周四... (按步长2)
+```
+
+#### 5. 复制模式填充
+
+当数据无法识别为特定模式时，或按住 Ctrl 键拖拽时，使用复制模式：
+```
+选中: A, B, C
+Ctrl + 拖拽填充: A, B, C, A, B, C... (循环复制)
+```
+
+
+## 文本映射配置
 
 当从外部（如Excel、文本）粘贴数据到表格时，可以配置文本到值的映射关系：
 
@@ -303,52 +359,6 @@ export default {
       }
       
       return value // 返回原值表示不处理
-    }
-  }
-}
-</script>
-```
-
-### 事件处理
-
-监听组件的各种操作事件，实现业务逻辑：
-
-```vue
-<template>
-  <el-table-excel-extends
-    @excel-copy="onCopy"
-    @excel-paste="onPaste"
-    @excel-clear="onClear"
-    @excel-select="onSelect"
-  >
-    <el-table :data="tableData">
-      <!-- 表格列定义 -->
-    </el-table>
-  </el-table-excel-extends>
-</template>
-
-<script>
-export default {
-  methods: {
-    onCopy({ copiedCells, copiedData }) {
-      console.log(`复制了 ${copiedCells.length} 个单元格`)
-      // 可以在这里记录操作日志
-    },
-    
-    onPaste({ affectedCells, pastedData }) {
-      this.$message.success(`成功粘贴 ${affectedCells.length} 个单元格`)
-      // 可以在这里触发数据保存
-    },
-    
-    onClear({ clearedCells, clearType }) {
-      console.log(`清空了 ${clearedCells.length} 个单元格，类型：${clearType}`)
-    },
-    
-    onSelect({ selectedCells, bounds }) {
-      // 显示选择信息
-      if (selectedCells.length > 1) {
-        this.selectionInfo = `已选择 ${selectedCells.length} 个单元格`
-      }
     }
   }
 }

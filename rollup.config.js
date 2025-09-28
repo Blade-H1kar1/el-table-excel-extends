@@ -2,6 +2,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import vue from "rollup-plugin-vue";
+import copy from "rollup-plugin-copy";
 
 export default [
   // ES Module build
@@ -30,6 +31,11 @@ export default [
           comments: false, // 去除注释
           beautify: true, // 保持代码格式化
         },
+      }),
+      // 复制构建后的文件到 example 目录
+      copy({
+        targets: [{ src: "dist/index.js", dest: "example" }],
+        hook: "writeBundle",
       }),
     ],
   },

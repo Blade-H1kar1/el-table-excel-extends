@@ -49,6 +49,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    clear: {
+      type: Boolean,
+      default: true,
+    },
     selection: {
       type: Boolean,
       default: true,
@@ -103,6 +107,11 @@ export default {
     // 自定义外部文本映射方法
     customMapping: {
       type: Function,
+    },
+    // 配置自定义填充列表
+    fillCustomLists: {
+      type: Array,
+      default: () => [],
     },
   },
 
@@ -169,6 +178,7 @@ export default {
         fill: this.fill,
         undo: this.undo,
         redo: this.redo,
+        clear: this.clear,
         selection: this.selection,
         allSelection: this.allSelection,
         rowSelection: this.rowSelection,
@@ -296,6 +306,7 @@ export default {
     stopAutoScroll() {
       this.autoScrollState.isScrolling = false;
       this.autoScrollState.currentScrollDirection = null;
+      this.updateOverlays();
     },
 
     // 创建全选角标
@@ -506,6 +517,11 @@ export default {
 
       // Delete 或 Backspace 清空选中单元格
       if (event.key === "Delete" || event.key === "Backspace") {
+        // 检查清空权限
+        if (!this.areaSelection.clear) {
+          console.warn("清空操作被禁用");
+          return;
+        }
         event.preventDefault();
         this.clearCells(this.selectedCells, "clear");
         return;
@@ -1293,13 +1309,13 @@ export default {
         const disableSmartFill = event.ctrlKey || event.metaKey;
 
         // 执行填充操作
-        const { affectedCells, fillBounds } = this.performFillOperation(
+        const { affectedCells } = this.performFillOperation(
           originalBounds,
           fillCells,
           fillDirection,
           disableSmartFill
         );
-        this.selectCells(fillBounds);
+        this.selectCells(getCellsBounds(fillCells));
       }
 
       // 移除全局事件监听器
@@ -1320,7 +1336,7 @@ export default {
 
       // 触发填充操作事件
       this.$emit("excel-fill", {
-        fillCells: affectedCells,
+        fillCells,
       });
     },
 

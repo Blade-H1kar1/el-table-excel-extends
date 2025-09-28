@@ -464,7 +464,7 @@ export default {
       );
 
       // 应用填充数据到目标单元格
-      const { affectedCells, fillBounds } = this.applyFillData(fillData);
+      const { affectedCells } = this.applyFillData(fillData);
 
       // 记录撤销历史
       if (affectedCells && affectedCells.length > 0) {
@@ -473,7 +473,6 @@ export default {
 
       return {
         affectedCells,
-        fillBounds,
         sourceData,
         fillData,
       };
@@ -508,10 +507,7 @@ export default {
       disableSmartFill = false
     ) {
       // 分析数据模式
-      const pattern = analyzePattern(
-        sourceData,
-        this.areaSelection.fillCustomLists || {}
-      );
+      const pattern = analyzePattern(sourceData, this.fillCustomLists || {});
 
       // 使用智能填充引擎生成数据
       return generateSmartFillData(
@@ -555,7 +551,6 @@ export default {
 
       return {
         affectedCells,
-        fillBounds: getCellsBounds(affectedCells),
       };
     },
   },
