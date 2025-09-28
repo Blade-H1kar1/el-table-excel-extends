@@ -2824,6 +2824,10 @@ var script = {
             type: Boolean,
             default: true
         },
+        clear: {
+            type: Boolean,
+            default: true
+        },
         selection: {
             type: Boolean,
             default: true
@@ -2918,6 +2922,7 @@ var script = {
                 fill: this.fill,
                 undo: this.undo,
                 redo: this.redo,
+                clear: this.clear,
                 selection: this.selection,
                 allSelection: this.allSelection,
                 rowSelection: this.rowSelection,
@@ -2988,6 +2993,7 @@ var script = {
         stopAutoScroll() {
             this.autoScrollState.isScrolling = false;
             this.autoScrollState.currentScrollDirection = null;
+            this.updateOverlays();
         },
         createSelectAllCorner() {
             if (!this.areaSelection.allSelection) return;
@@ -3130,6 +3136,10 @@ var script = {
                 this.executeUndo();
             }
             if (event.key === "Delete" || event.key === "Backspace") {
+                if (!this.areaSelection.clear) {
+                    console.warn("清空操作被禁用");
+                    return;
+                }
                 event.preventDefault();
                 this.clearCells(this.selectedCells, "clear");
                 return;
@@ -3796,7 +3806,7 @@ const __vue_script__ = script;
 
 const __vue_inject_styles__ = function(inject) {
     if (!inject) return;
-    inject("data-v-5202f630_0", {
+    inject("data-v-276ffb32_0", {
         source: "\n.el-table-excel-wrapper {\r\n  outline: none;\n}\r\n/* 选中区域遮罩层样式 */\n.el-table .cell-selection-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  background-color: rgba(64, 158, 255, 0.1);\r\n  border: 1px solid #409eff;\r\n  border-radius: 2px;\n}\r\n\r\n/* 填充小方块 */\n.el-table .cell-selection-overlay .fill-handle {\r\n  pointer-events: auto;\r\n  position: absolute;\r\n  right: 0;\r\n  bottom: 0;\r\n  width: 4px;\r\n  height: 4px;\r\n  background-color: #409eff;\r\n  cursor: crosshair;\r\n  z-index: 3;\r\n  box-sizing: border-box;\r\n  border-radius: 1px;\n}\n.el-table .cell-selection-overlay .fill-handle:hover {\r\n  background-color: #40a9ff;\r\n  transform: scale(1.2);\r\n  box-shadow: 0 0 4px rgba(64, 158, 255, 0.5);\n}\n.el-table .cell-selection-overlay .fill-handle:active {\r\n  background-color: #096dd9;\r\n  transform: scale(1.1);\n}\r\n\r\n/* 复制虚线框样式 */\n.el-table .copy-dash-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  background: transparent;\r\n  border: 2px dashed #409eff;\r\n  border-radius: 2px;\n}\r\n\r\n/* 扩展选中区域样式 */\n.el-table .extended-selection-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  border: 2px dashed #909399;\r\n  border-radius: 2px;\n}\r\n\r\n/* 左上角全选角标样式 - 三角形设计 */\n.el-table .table-select-all-corner {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  width: 0;\r\n  height: 0;\r\n  border-style: solid;\r\n  border-width: 10px 10px 0 0;\r\n  border-color: #909399 transparent transparent transparent;\r\n  cursor: pointer;\r\n  z-index: 1002;\r\n  box-sizing: border-box;\n}\n.el-table .table-select-all-corner:active {\r\n  border-color: #409eff transparent transparent transparent;\n}\r\n",
         map: undefined,
         media: undefined
