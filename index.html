@@ -338,544 +338,550 @@
 
     <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-    <script src="https://unpkg.com/el-table-excel-extends/dist/index.min.js"></script>
 
-    <script>
-      new Vue({
-        el: "#app",
-        components: {
-          "el-table-excel-extends": window.ElTableExcelExtends,
-        },
-        data() {
-          return {
-            tableData: this.generateTableData(),
-            externalData: "", // 外部数据文本
-            // 功能配置
-            config: {
-              copy: true,
-              paste: true,
-              cut: true,
-              fill: true,
-              undo: true,
-              redo: true,
-              selection: true,
-              allSelection: true,
-              rowSelection: true,
-              columnSelection: true,
-              autoScroll: true,
-              scrollSpeed: 10,
-              maxUndoSteps: 50,
-            },
-            // 自定义方法开关
-            enableCustomMethods: true,
-            enableTextMapping: true,
-            // 文本映射配置
-            textMappingConfig: {
-              status: {
-                启用: true,
-                禁用: false,
-                是: true,
-                否: false,
-                激活: true,
-                停用: false,
-              },
-              department: {
-                技术部: "1",
-                产品部: "2",
-                市场部: "3",
-                人事部: "4",
-                财务部: "5",
-                运营部: "6",
-              },
-              gender: {
-                男性: "1",
-                女性: "2",
-                M: "1",
-                F: "2",
-                Male: "1",
-                Female: "2",
-                男: "1",
-                女: "2",
-              },
-              education: {
-                高中毕业: "1",
-                大学专科: "2",
-                大学本科: "3",
-                研究生: "4",
-                博士: "5",
-                高中: "1",
-                大专: "2",
-                本科: "3",
-                硕士: "4",
-                博士: "5",
-              },
-            },
-            // 操作日志
-            operationLog: [],
-          };
-        },
-        computed: {
-          // 组件重新渲染的key，当配置改变时会触发组件重新渲染
-          componentKey() {
-            return JSON.stringify({
-              config: this.config,
-              enableCustomMethods: this.enableCustomMethods,
-              enableTextMapping: this.enableTextMapping,
-            });
+    <script type="module">
+      import ElTableExcelExtends from "../dist/index.js";
+      window.addEventListener("load", function () {
+        new Vue({
+          el: "#app",
+          components: {
+            "el-table-excel-extends": ElTableExcelExtends,
           },
-        },
-        methods: {
-          generateTableData() {
-            const data = [];
-            let id = 1;
-
-            const techManager = {
-              id: id++,
-              name: "张伟",
-              department: "1", // 技术部
-              position: "技术总监",
-              age: 35,
-              gender: "1", // 男
-              education: "4", // 硕士
-              experience: 10,
-              phone: "13812340001",
-              email: "zhangwei@demo.com",
-              address: "北京市海淀区",
-              joinDate: "2020-01-01",
-              status: true,
-              salary: 30000,
-              bonus: 5000,
-              skill: "管理",
-              level: "专家",
-              project: "平台架构",
-              manager: "CTO",
-              workLocation: "北京",
-              workType: "全职",
-              performance: 5,
-              birthday: "1988-01-01",
-              emergencyContact: "李芳",
-              emergencyPhone: "13912340001",
-              bankAccount: "6222****0001",
-              socialSecurity: "1101****0001",
-              notes: "技术负责人",
-              children: [
-                {
-                  id: id++,
-                  name: "李明",
-                  department: "1", // 技术部
-                  position: "牛马码农",
-                  age: 28,
-                  gender: "1", // 男
-                  education: "3", // 本科
-                  experience: 5,
-                  phone: "13812340002",
-                  email: "liming@demo.com",
-                  address: "北京市朝阳区",
-                  joinDate: "2021-03-01",
-                  status: true,
-                  salary: 18000,
-                  bonus: 2000,
-                  skill: "Vue.js",
-                  level: "高级",
-                  project: "前端开发",
-                  manager: "张伟",
-                  workLocation: "北京",
-                  workType: "全职",
-                  performance: 4,
-                  birthday: "1995-05-15",
-                  emergencyContact: "王静",
-                  emergencyPhone: "13912340002",
-                  bankAccount: "6222****0002",
-                  socialSecurity: "1101****0002",
-                  notes: "前端专家",
+          data() {
+            return {
+              tableData: this.generateTableData(),
+              externalData: "", // 外部数据文本
+              // 功能配置
+              config: {
+                copy: true,
+                paste: true,
+                cut: true,
+                fill: true,
+                undo: true,
+                redo: true,
+                selection: true,
+                allSelection: true,
+                rowSelection: true,
+                columnSelection: true,
+                autoScroll: true,
+                scrollSpeed: 10,
+                maxUndoSteps: 50,
+              },
+              // 自定义方法开关
+              enableCustomMethods: true,
+              enableTextMapping: true,
+              // 文本映射配置
+              textMappingConfig: {
+                status: {
+                  启用: true,
+                  禁用: false,
+                  是: true,
+                  否: false,
+                  激活: true,
+                  停用: false,
                 },
-                {
-                  id: id++,
-                  name: "王静",
-                  department: "1", // 技术部
-                  position: "后端工程师",
-                  age: 30,
-                  gender: "2", // 女
-                  education: "4", // 硕士
-                  experience: 7,
-                  phone: "13812340003",
-                  email: "wangjing@demo.com",
-                  address: "北京市海淀区",
-                  joinDate: "2020-08-01",
-                  status: true,
-                  salary: 22000,
-                  bonus: 3000,
-                  skill: "Java",
-                  level: "高级",
-                  project: "后端开发",
-                  manager: "张伟",
-                  workLocation: "北京",
-                  workType: "全职",
-                  performance: 5,
-                  birthday: "1993-08-20",
-                  emergencyContact: "李伟",
-                  emergencyPhone: "13912340003",
-                  bankAccount: "6222****0003",
-                  socialSecurity: "1101****0003",
-                  notes: "后端架构师",
+                department: {
+                  技术部: "1",
+                  产品部: "2",
+                  市场部: "3",
+                  人事部: "4",
+                  财务部: "5",
+                  运营部: "6",
                 },
-              ],
+                gender: {
+                  男性: "1",
+                  女性: "2",
+                  M: "1",
+                  F: "2",
+                  Male: "1",
+                  Female: "2",
+                  男: "1",
+                  女: "2",
+                },
+                education: {
+                  高中毕业: "1",
+                  大学专科: "2",
+                  大学本科: "3",
+                  研究生: "4",
+                  博士: "5",
+                  高中: "1",
+                  大专: "2",
+                  本科: "3",
+                  硕士: "4",
+                  博士: "5",
+                },
+              },
+              // 操作日志
+              operationLog: [],
             };
-            data.push(techManager);
+          },
+          computed: {
+            // 组件重新渲染的key，当配置改变时会触发组件重新渲染
+            componentKey() {
+              return JSON.stringify({
+                config: this.config,
+                enableCustomMethods: this.enableCustomMethods,
+                enableTextMapping: this.enableTextMapping,
+              });
+            },
+          },
+          methods: {
+            generateTableData() {
+              const data = [];
+              let id = 1;
 
-            const departments = ["2", "3", "4", "5"]; // 产品部、市场部、人事部、财务部
-            const names = [
-              "赵敏",
-              "钱伟",
-              "孙丽",
-              "周强",
-              "吴娜",
-              "郑磊",
-              "冯静",
-              "陈杰",
-            ];
-            const positions = ["经理", "专员", "主管", "助理"];
-            const skills = ["产品设计", "市场推广", "人力资源", "财务分析"];
-            const levels = ["初级", "中级", "高级"];
-            const projects = ["项目A", "项目B", "项目C"];
+              const techManager = {
+                id: id++,
+                name: "张伟",
+                department: "1", // 技术部
+                position: "技术总监",
+                age: 35,
+                gender: "1", // 男
+                education: "4", // 硕士
+                experience: 10,
+                phone: "13812340001",
+                email: "zhangwei@demo.com",
+                address: "北京市海淀区",
+                joinDate: "2020-01-01",
+                status: true,
+                salary: 30000,
+                bonus: 5000,
+                skill: "管理",
+                level: "专家",
+                project: "平台架构",
+                manager: "CTO",
+                workLocation: "北京",
+                workType: "全职",
+                performance: 5,
+                birthday: "1988-01-01",
+                emergencyContact: "李芳",
+                emergencyPhone: "13912340001",
+                bankAccount: "6222****0001",
+                socialSecurity: "1101****0001",
+                notes: "技术负责人",
+                children: [
+                  {
+                    id: id++,
+                    name: "李明",
+                    department: "1", // 技术部
+                    position: "牛马码农",
+                    age: 28,
+                    gender: "1", // 男
+                    education: "3", // 本科
+                    experience: 5,
+                    phone: "13812340002",
+                    email: "liming@demo.com",
+                    address: "北京市朝阳区",
+                    joinDate: "2021-03-01",
+                    status: true,
+                    salary: 18000,
+                    bonus: 2000,
+                    skill: "Vue.js",
+                    level: "高级",
+                    project: "前端开发",
+                    manager: "张伟",
+                    workLocation: "北京",
+                    workType: "全职",
+                    performance: 4,
+                    birthday: "1995-05-15",
+                    emergencyContact: "王静",
+                    emergencyPhone: "13912340002",
+                    bankAccount: "6222****0002",
+                    socialSecurity: "1101****0002",
+                    notes: "前端专家",
+                  },
+                  {
+                    id: id++,
+                    name: "王静",
+                    department: "1", // 技术部
+                    position: "后端工程师",
+                    age: 30,
+                    gender: "2", // 女
+                    education: "4", // 硕士
+                    experience: 7,
+                    phone: "13812340003",
+                    email: "wangjing@demo.com",
+                    address: "北京市海淀区",
+                    joinDate: "2020-08-01",
+                    status: true,
+                    salary: 22000,
+                    bonus: 3000,
+                    skill: "Java",
+                    level: "高级",
+                    project: "后端开发",
+                    manager: "张伟",
+                    workLocation: "北京",
+                    workType: "全职",
+                    performance: 5,
+                    birthday: "1993-08-20",
+                    emergencyContact: "李伟",
+                    emergencyPhone: "13912340003",
+                    bankAccount: "6222****0003",
+                    socialSecurity: "1101****0003",
+                    notes: "后端架构师",
+                  },
+                ],
+              };
+              data.push(techManager);
 
-            departments.forEach((dept, deptIndex) => {
-              const count = 10 + Math.floor(Math.random() * 3);
-              for (let i = 0; i < count; i++) {
-                const employee = {
-                  id: id++,
-                  name: names[(deptIndex * 5 + i) % names.length],
-                  department: dept,
-                  position: positions[i % positions.length],
-                  age: 25 + Math.floor(Math.random() * 15),
-                  gender: i % 2 === 0 ? "1" : "2", // 1=男, 2=女
-                  education: ["3", "4"][Math.floor(Math.random() * 2)], // 3=本科, 4=硕士
-                  experience: Math.floor(Math.random() * 10),
-                  phone: `1381234${String(1000 + id).slice(-4)}`,
-                  email: `user${id}@demo.com`,
-                  address: `${
-                    ["北京", "上海", "广州"][Math.floor(Math.random() * 3)]
-                  }市`,
-                  joinDate: `202${Math.floor(Math.random() * 4)}-0${
-                    Math.floor(Math.random() * 9) + 1
-                  }-01`,
-                  status: Math.random() > 0.2,
-                  salary: 8000 + Math.floor(Math.random() * 15000),
-                  bonus: Math.floor(Math.random() * 3000),
-                  skill: skills[deptIndex % skills.length],
-                  level: levels[Math.floor(Math.random() * 3)],
-                  project: projects[Math.floor(Math.random() * 3)],
-                  manager: `${
-                    ["产品部", "市场部", "人事部", "财务部"][deptIndex]
-                  }经理`,
-                  workLocation: ["北京", "上海", "远程"][
-                    Math.floor(Math.random() * 3)
-                  ],
-                  workType: "全职",
-                  performance: 3 + Math.floor(Math.random() * 3),
-                  birthday: `199${Math.floor(Math.random() * 10)}-0${
-                    Math.floor(Math.random() * 9) + 1
-                  }-01`,
-                  emergencyContact: "家属",
-                  emergencyPhone: `1391234${String(2000 + id).slice(-4)}`,
-                  bankAccount: `6222****${String(3000 + id).slice(-4)}`,
-                  socialSecurity: `1101****${String(4000 + id).slice(-4)}`,
-                  notes: i === 0 ? "部门骨干" : "",
-                };
-                data.push(employee);
+              const departments = ["2", "3", "4", "5"]; // 产品部、市场部、人事部、财务部
+              const names = [
+                "赵敏",
+                "钱伟",
+                "孙丽",
+                "周强",
+                "吴娜",
+                "郑磊",
+                "冯静",
+                "陈杰",
+              ];
+              const positions = ["经理", "专员", "主管", "助理"];
+              const skills = ["产品设计", "市场推广", "人力资源", "财务分析"];
+              const levels = ["初级", "中级", "高级"];
+              const projects = ["项目A", "项目B", "项目C"];
+
+              departments.forEach((dept, deptIndex) => {
+                const count = 10 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < count; i++) {
+                  const employee = {
+                    id: id++,
+                    name: names[(deptIndex * 5 + i) % names.length],
+                    department: dept,
+                    position: positions[i % positions.length],
+                    age: 25 + Math.floor(Math.random() * 15),
+                    gender: i % 2 === 0 ? "1" : "2", // 1=男, 2=女
+                    education: ["3", "4"][Math.floor(Math.random() * 2)], // 3=本科, 4=硕士
+                    experience: Math.floor(Math.random() * 10),
+                    phone: `1381234${String(1000 + id).slice(-4)}`,
+                    email: `user${id}@demo.com`,
+                    address: `${
+                      ["北京", "上海", "广州"][Math.floor(Math.random() * 3)]
+                    }市`,
+                    joinDate: `202${Math.floor(Math.random() * 4)}-0${
+                      Math.floor(Math.random() * 9) + 1
+                    }-01`,
+                    status: Math.random() > 0.2,
+                    salary: 8000 + Math.floor(Math.random() * 15000),
+                    bonus: Math.floor(Math.random() * 3000),
+                    skill: skills[deptIndex % skills.length],
+                    level: levels[Math.floor(Math.random() * 3)],
+                    project: projects[Math.floor(Math.random() * 3)],
+                    manager: `${
+                      ["产品部", "市场部", "人事部", "财务部"][deptIndex]
+                    }经理`,
+                    workLocation: ["北京", "上海", "远程"][
+                      Math.floor(Math.random() * 3)
+                    ],
+                    workType: "全职",
+                    performance: 3 + Math.floor(Math.random() * 3),
+                    birthday: `199${Math.floor(Math.random() * 10)}-0${
+                      Math.floor(Math.random() * 9) + 1
+                    }-01`,
+                    emergencyContact: "家属",
+                    emergencyPhone: `1391234${String(2000 + id).slice(-4)}`,
+                    bankAccount: `6222****${String(3000 + id).slice(-4)}`,
+                    socialSecurity: `1101****${String(4000 + id).slice(-4)}`,
+                    notes: i === 0 ? "部门骨干" : "",
+                  };
+                  data.push(employee);
+                }
+              });
+
+              return data;
+            },
+
+            generateExternalData() {
+              const sampleData = [
+                [
+                  "张三",
+                  "技术部",
+                  "前端牛马",
+                  "28",
+                  "男性",
+                  "大学本科",
+                  "5",
+                  "13812345001",
+                  "zhangsan@demo.com",
+                ],
+                [
+                  "李四",
+                  "产品部",
+                  "产品经理",
+                  "30",
+                  "Female",
+                  "研究生",
+                  "7",
+                  "13812345002",
+                  "lisi@demo.com",
+                ],
+                [
+                  "王五",
+                  "市场部",
+                  "市场专员",
+                  "26",
+                  "M",
+                  "高中毕业",
+                  "3",
+                  "13812345003",
+                  "wangwu@demo.com",
+                ],
+                [
+                  "赵六",
+                  "4", // 人事部
+                  "人事专员",
+                  "29",
+                  "F",
+                  "大学专科",
+                  "6",
+                  "13812345004",
+                  "zhaoliu@demo.com",
+                ],
+                [
+                  "钱七",
+                  "5", // 财务部
+                  "会计",
+                  "32",
+                  "女性",
+                  "博士",
+                  "8",
+                  "13812345005",
+                  "qianqi@demo.com",
+                ],
+              ];
+
+              // 转换为制表符分隔的文本格式（模拟Excel复制的数据）
+              this.externalData = sampleData
+                .map((row) => row.join("\t"))
+                .join("\n");
+            },
+
+            // 自定义方法实现
+            getCellText({ row, column, value }) {
+              // 自定义获取单元格文本的方法（用于复制）
+              if (column.property === "status") {
+                return value ? "启用" : "禁用";
               }
-            });
+              if (column.property === "joinDate" && value) {
+                return new Date(value).toLocaleDateString("zh-CN");
+              }
+              if (column.property === "salary" && typeof value === "number") {
+                return `¥${value.toLocaleString()}`;
+              }
+              // 手机号码和紧急联系电话脱敏处理
+              if (
+                (column.property === "phone" ||
+                  column.property === "emergencyPhone") &&
+                value
+              ) {
+                return value.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2");
+              }
+              return value;
+            },
 
-            return data;
-          },
+            getCellValue({ row, column, value }) {
+              return value;
+            },
 
-          generateExternalData() {
-            const sampleData = [
-              [
-                "张三",
-                "技术部",
-                "前端牛马",
-                "28",
-                "男性",
-                "大学本科",
-                "5",
-                "13812345001",
-                "zhangsan@demo.com",
-              ],
-              [
-                "李四",
-                "产品部",
-                "产品经理",
-                "30",
-                "Female",
-                "研究生",
-                "7",
-                "13812345002",
-                "lisi@demo.com",
-              ],
-              [
-                "王五",
-                "市场部",
-                "市场专员",
-                "26",
-                "M",
-                "高中毕业",
-                "3",
-                "13812345003",
-                "wangwu@demo.com",
-              ],
-              [
-                "赵六",
-                "4", // 人事部
-                "人事专员",
-                "29",
-                "F",
-                "大学专科",
-                "6",
-                "13812345004",
-                "zhaoliu@demo.com",
-              ],
-              [
-                "钱七",
-                "5", // 财务部
-                "会计",
-                "32",
-                "女性",
-                "博士",
-                "8",
-                "13812345005",
-                "qianqi@demo.com",
-              ],
-            ];
+            setCellValue({ row, column, value, type }, setByProp) {
+              // 自定义设置单元格值的方法
+              this.logOperation(`设置单元格值: ${column.label} = ${value}`);
 
-            // 转换为制表符分隔的文本格式（模拟Excel复制的数据）
-            this.externalData = sampleData
-              .map((row) => row.join("\t"))
-              .join("\n");
-          },
+              // 权限控制 - 只允许编辑包含自定义表单组件的列
+              const editableColumns = [
+                "department",
+                "position",
+                "age",
+                "gender",
+                "education",
+                "experience",
+                "phone",
+                "email",
+                "address",
+                "joinDate",
+              ];
 
-          // 自定义方法实现
-          getCellText({ row, column, value }) {
-            // 自定义获取单元格文本的方法（用于复制）
-            if (column.property === "status") {
-              return value ? "启用" : "禁用";
-            }
-            if (column.property === "joinDate" && value) {
-              return new Date(value).toLocaleDateString("zh-CN");
-            }
-            if (column.property === "salary" && typeof value === "number") {
-              return `¥${value.toLocaleString()}`;
-            }
-            // 手机号码和紧急联系电话脱敏处理
-            if (
-              (column.property === "phone" ||
-                column.property === "emergencyPhone") &&
-              value
-            ) {
-              return value.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2");
-            }
-            return value;
-          },
-
-          getCellValue({ row, column, value }) {
-            return value;
-          },
-
-          setCellValue({ row, column, value, type }, setByProp) {
-            // 自定义设置单元格值的方法
-            this.logOperation(`设置单元格值: ${column.label} = ${value}`);
-
-            // 权限控制 - 只允许编辑包含自定义表单组件的列
-            const editableColumns = [
-              "department",
-              "position",
-              "age",
-              "gender",
-              "education",
-              "experience",
-              "phone",
-              "email",
-              "address",
-              "joinDate",
-            ];
-
-            if (!editableColumns.includes(column.property)) {
-              this.$message.warning(`${column.label}列不允许编辑`);
-              return;
-            }
-
-            // 数据验证
-            if (column.property === "age") {
-              const age = Number(value);
-              if (isNaN(age) || age < 18 || age > 65) {
-                this.$message.warning("年龄必须在18-65之间");
-                setByProp(row, column.property, null);
+              if (!editableColumns.includes(column.property)) {
+                this.$message.warning(`${column.label}列不允许编辑`);
                 return;
               }
-              value = age;
-            }
 
-            if (column.property === "phone") {
-              // 电话号码格式验证
-              const phoneRegex = /^1[3-9]\d{9}$/;
-              if (value && !phoneRegex.test(value.replace(/\D/g, ""))) {
-                this.$message.warning("请输入正确的手机号码");
-                setByProp(row, column.property, null);
-                return;
+              // 数据验证
+              if (column.property === "age") {
+                const age = Number(value);
+                if (isNaN(age) || age < 18 || age > 65) {
+                  this.$message.warning("年龄必须在18-65之间");
+                  setByProp(row, column.property, null);
+                  return;
+                }
+                value = age;
               }
-            }
 
-            if (column.property === "email") {
-              // 邮箱格式验证
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (value && !emailRegex.test(value)) {
-                this.$message.warning("请输入正确的邮箱地址");
-                setByProp(row, column.property, null);
-                return;
+              if (column.property === "phone") {
+                // 电话号码格式验证
+                const phoneRegex = /^1[3-9]\d{9}$/;
+                if (value && !phoneRegex.test(value.replace(/\D/g, ""))) {
+                  this.$message.warning("请输入正确的手机号码");
+                  setByProp(row, column.property, null);
+                  return;
+                }
               }
-            }
 
-            if (column.property === "salary") {
-              const salary = Number(value);
-              if (isNaN(salary) || salary < 0) {
-                this.$message.warning("薪资必须为正数");
-                setByProp(row, column.property, null);
-                return;
+              if (column.property === "email") {
+                // 邮箱格式验证
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (value && !emailRegex.test(value)) {
+                  this.$message.warning("请输入正确的邮箱地址");
+                  setByProp(row, column.property, null);
+                  return;
+                }
               }
-              value = salary;
-            }
 
-            // 设置值
-            setByProp(row, column.property, value);
-          },
-
-          getClearValue({ row, column }) {
-            // 自定义清空单元格值的方法
-            const clearValues = {
-              status: false,
-              age: 18,
-              salary: 0,
-              bonus: 0,
-              experience: 0,
-              performance: 3,
-              gender: "男",
-              education: "本科",
-              workType: "全职",
-            };
-
-            return clearValues[column.property];
-          },
-
-          customTextMapping({ value, column }) {
-            // 自定义文本映射函数
-            if (column.property === "joinDate") {
-              // 处理各种日期格式
-              const date = new Date(value);
-              if (!isNaN(date.getTime())) {
-                return date.toISOString().split("T")[0];
+              if (column.property === "salary") {
+                const salary = Number(value);
+                if (isNaN(salary) || salary < 0) {
+                  this.$message.warning("薪资必须为正数");
+                  setByProp(row, column.property, null);
+                  return;
+                }
+                value = salary;
               }
-            }
 
-            if (column.property === "salary" || column.property === "bonus") {
-              // 处理带货币符号的数字
-              const num = parseFloat(value.toString().replace(/[^\d.-]/g, ""));
-              return isNaN(num) ? 0 : num;
-            }
+              // 设置值
+              setByProp(row, column.property, value);
+            },
 
-            if (column.property === "phone") {
-              // 清理电话号码格式
-              return value.toString().replace(/\D/g, "");
-            }
+            getClearValue({ row, column }) {
+              // 自定义清空单元格值的方法
+              const clearValues = {
+                status: false,
+                age: 18,
+                salary: 0,
+                bonus: 0,
+                experience: 0,
+                performance: 3,
+                gender: "男",
+                education: "本科",
+                workType: "全职",
+              };
 
-            return value;
+              return clearValues[column.property];
+            },
+
+            customTextMapping({ value, column }) {
+              // 自定义文本映射函数
+              if (column.property === "joinDate") {
+                // 处理各种日期格式
+                const date = new Date(value);
+                if (!isNaN(date.getTime())) {
+                  return date.toISOString().split("T")[0];
+                }
+              }
+
+              if (column.property === "salary" || column.property === "bonus") {
+                // 处理带货币符号的数字
+                const num = parseFloat(
+                  value.toString().replace(/[^\d.-]/g, "")
+                );
+                return isNaN(num) ? 0 : num;
+              }
+
+              if (column.property === "phone") {
+                // 清理电话号码格式
+                return value.toString().replace(/\D/g, "");
+              }
+
+              return value;
+            },
+
+            // 事件处理方法
+            onExcelCopy({ copiedCells, copiedData, bounds }) {
+              this.logOperation(`复制了 ${copiedCells.length} 个单元格`);
+              console.log("复制数据:", copiedData);
+            },
+
+            onExcelPaste({ affectedCells, pastedData, bounds }) {
+              this.logOperation(`粘贴了 ${affectedCells.length} 个单元格`);
+              this.$message.success(
+                `成功粘贴 ${affectedCells.length} 个单元格`
+              );
+            },
+
+            onExcelCut({ cutCells, cutData }) {
+              this.logOperation(`剪切了 ${cutCells.length} 个单元格`);
+            },
+
+            onExcelFill({ filledCells, fillData, bounds }) {
+              this.logOperation(`填充了 ${filledCells.length} 个单元格`);
+              this.$message.success(
+                `智能填充完成，影响 ${filledCells.length} 个单元格`
+              );
+            },
+
+            onExcelUndo({ affectedCells }) {
+              this.logOperation(
+                `撤销操作，影响 ${affectedCells.length} 个单元格`
+              );
+            },
+
+            onExcelRedo({ affectedCells }) {
+              this.logOperation(
+                `重做操作，影响 ${affectedCells.length} 个单元格`
+              );
+            },
+
+            onExcelSelect({ selectedCells, bounds }) {
+              if (selectedCells.length > 1) {
+                console.log(`选择了 ${selectedCells.length} 个单元格`);
+              }
+            },
+
+            onAreaClear({ clearedCells }) {
+              this.logOperation(`清空了 ${clearedCells.length} 个单元格`);
+            },
+
+            logOperation(message) {
+              const timestamp = new Date().toLocaleTimeString();
+              this.operationLog.unshift(`[${timestamp}] ${message}`);
+              // 保持日志数量在合理范围内
+              if (this.operationLog.length > 50) {
+                this.operationLog = this.operationLog.slice(0, 50);
+              }
+            },
+
+            pinyin(text) {
+              const pinyinMap = {
+                张: "zhang",
+                李: "li",
+                王: "wang",
+                赵: "zhao",
+                钱: "qian",
+                孙: "sun",
+                周: "zhou",
+                吴: "wu",
+                郑: "zheng",
+                冯: "feng",
+                陈: "chen",
+                伟: "wei",
+                明: "ming",
+                静: "jing",
+                敏: "min",
+                丽: "li",
+                强: "qiang",
+                磊: "lei",
+                娜: "na",
+                杰: "jie",
+              };
+              return text
+                .split("")
+                .map((char) => pinyinMap[char] || char)
+                .join("");
+            },
           },
 
-          // 事件处理方法
-          onExcelCopy({ copiedCells, copiedData, bounds }) {
-            this.logOperation(`复制了 ${copiedCells.length} 个单元格`);
-            console.log("复制数据:", copiedData);
+          mounted() {
+            this.generateExternalData();
           },
-
-          onExcelPaste({ affectedCells, pastedData, bounds }) {
-            this.logOperation(`粘贴了 ${affectedCells.length} 个单元格`);
-            this.$message.success(`成功粘贴 ${affectedCells.length} 个单元格`);
-          },
-
-          onExcelCut({ cutCells, cutData }) {
-            this.logOperation(`剪切了 ${cutCells.length} 个单元格`);
-          },
-
-          onExcelFill({ filledCells, fillData, bounds }) {
-            this.logOperation(`填充了 ${filledCells.length} 个单元格`);
-            this.$message.success(
-              `智能填充完成，影响 ${filledCells.length} 个单元格`
-            );
-          },
-
-          onExcelUndo({ affectedCells }) {
-            this.logOperation(
-              `撤销操作，影响 ${affectedCells.length} 个单元格`
-            );
-          },
-
-          onExcelRedo({ affectedCells }) {
-            this.logOperation(
-              `重做操作，影响 ${affectedCells.length} 个单元格`
-            );
-          },
-
-          onExcelSelect({ selectedCells, bounds }) {
-            if (selectedCells.length > 1) {
-              console.log(`选择了 ${selectedCells.length} 个单元格`);
-            }
-          },
-
-          onAreaClear({ clearedCells }) {
-            this.logOperation(`清空了 ${clearedCells.length} 个单元格`);
-          },
-
-          logOperation(message) {
-            const timestamp = new Date().toLocaleTimeString();
-            this.operationLog.unshift(`[${timestamp}] ${message}`);
-            // 保持日志数量在合理范围内
-            if (this.operationLog.length > 50) {
-              this.operationLog = this.operationLog.slice(0, 50);
-            }
-          },
-
-          pinyin(text) {
-            const pinyinMap = {
-              张: "zhang",
-              李: "li",
-              王: "wang",
-              赵: "zhao",
-              钱: "qian",
-              孙: "sun",
-              周: "zhou",
-              吴: "wu",
-              郑: "zheng",
-              冯: "feng",
-              陈: "chen",
-              伟: "wei",
-              明: "ming",
-              静: "jing",
-              敏: "min",
-              丽: "li",
-              强: "qiang",
-              磊: "lei",
-              娜: "na",
-              杰: "jie",
-            };
-            return text
-              .split("")
-              .map((char) => pinyinMap[char] || char)
-              .join("");
-          },
-        },
-
-        mounted() {
-          this.generateExternalData();
-        },
+        });
       });
     </script>
   </body>
