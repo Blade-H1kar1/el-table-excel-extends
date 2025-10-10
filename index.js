@@ -194,18 +194,18 @@ function calculateSelectionBounds(selectedCells, tableEl, fixedType = "body") {
         bottomRightCell = getCellElement(tableEl, searchRowIndex, maxColumnIndex, fixedType);
     }
     if (!topLeftCell || !bottomRightCell) return null;
-    const topLeftRect = getCachedBoundingClientRect(topLeftCell);
-    const bottomRightRect = getCachedBoundingClientRect(bottomRightCell);
+    const topLeftRect = topLeftCell.getBoundingClientRect();
+    const bottomRightRect = bottomRightCell.getBoundingClientRect();
     let leftBound = topLeftRect.left - wrapperRect.left + scrollLeft;
     let topBound = topLeftRect.top - wrapperRect.top + scrollTop;
     let rightBound = bottomRightRect.right - wrapperRect.left + scrollLeft;
     let bottomBound = bottomRightRect.bottom - wrapperRect.top + scrollTop;
     if (topRightCell && topRightCell !== topLeftCell) {
-        const topRightRect = getCachedBoundingClientRect(topRightCell);
+        const topRightRect = topRightCell.getBoundingClientRect();
         rightBound = Math.max(rightBound, topRightRect.right - wrapperRect.left + scrollLeft);
     }
     if (bottomLeftCell && bottomLeftCell !== topLeftCell) {
-        const bottomLeftRect = getCachedBoundingClientRect(bottomLeftCell);
+        const bottomLeftRect = bottomLeftCell.getBoundingClientRect();
         bottomBound = Math.max(bottomBound, bottomLeftRect.bottom - wrapperRect.top + scrollTop);
     }
     const bounds = {
@@ -394,15 +394,10 @@ function calculateRelativePosition(event, containerInfo) {
     };
     const containerRect = getCachedBoundingClientRect(container);
     let relativeMouseX, relativeMouseY;
-    if (type === "body") {
-        const scrollLeft = container.scrollLeft;
-        const scrollTop = container.scrollTop;
-        relativeMouseX = event.clientX - containerRect.left + scrollLeft;
-        relativeMouseY = event.clientY - containerRect.top + scrollTop;
-    } else {
-        relativeMouseX = event.clientX - containerRect.left;
-        relativeMouseY = event.clientY - containerRect.top;
-    }
+    const scrollLeft = container.scrollLeft;
+    const scrollTop = container.scrollTop;
+    relativeMouseX = event.clientX - containerRect.left + scrollLeft;
+    relativeMouseY = event.clientY - containerRect.top + scrollTop;
     return {
         relativeMouseX: relativeMouseX,
         relativeMouseY: relativeMouseY
@@ -2910,10 +2905,14 @@ var script = {
             autoScrollState: {
                 isScrolling: false,
                 scrollSpeed: this.scrollSpeed,
-                currentScrollDirection: null
+                currentScrollDirection: null,
+                animationFrameId: null
             },
             undoRedoManager: null,
-            lastCellInfo: null
+            lastCellInfo: null,
+            lastSelectedCells: [],
+            lastExtendedCells: [],
+            lastCopiedCells: []
         };
     },
     mounted() {
@@ -2953,14 +2952,23 @@ var script = {
         cleanup() {
             this.removeAllEvents();
             this.destroyCellObserver();
+            this.stopAutoScroll();
             if (this.overlayManager) {
                 this.overlayManager.destroy();
                 this.overlayManager = null;
             }
         },
+        arraysEqual(arr1, arr2) {
+            if (arr1.length !== arr2.length) return false;
+            return arr1.every((item, index) => arr2[index].columnIndex === item.columnIndex && arr2[index].rowIndex === item.rowIndex);
+        },
         startAutoScroll(scrollDirection) {
             if (!this.areaSelection.autoScroll) return;
-            if (this.autoScrollState.isScrolling) {
+            if (this.autoScrollState.isScrolling && this.autoScrollState.animationFrameId) {
+                cancelAnimationFrame(this.autoScrollState.animationFrameId);
+                this.autoScrollState.animationFrameId = null;
+                this.autoScrollState.currentScrollDirection = scrollDirection;
+            } else if (this.autoScrollState.isScrolling) {
                 this.autoScrollState.currentScrollDirection = scrollDirection;
                 return;
             }
@@ -2974,7 +2982,10 @@ var script = {
             const scrollThreshold = 5;
             const {scrollSpeed: scrollSpeed} = this.autoScrollState;
             const scrollAnimation = () => {
-                if (!this.autoScrollState.isScrolling) return;
+                if (!this.autoScrollState.isScrolling) {
+                    this.autoScrollState.animationFrameId = null;
+                    return;
+                }
                 const currentDirection = this.autoScrollState.currentScrollDirection;
                 let scrolled = false;
                 if (currentDirection.up && tableWrapper.scrollTop > scrollThreshold) {
@@ -2994,17 +3005,20 @@ var script = {
                     scrolled = true;
                 }
                 if (this.autoScrollState.isScrolling && scrolled) {
-                    requestAnimationFrame(scrollAnimation);
+                    this.autoScrollState.animationFrameId = requestAnimationFrame(scrollAnimation);
                 } else {
                     this.stopAutoScroll();
                 }
             };
-            requestAnimationFrame(scrollAnimation);
+            this.autoScrollState.animationFrameId = requestAnimationFrame(scrollAnimation);
         },
         stopAutoScroll() {
+            if (this.autoScrollState.animationFrameId) {
+                cancelAnimationFrame(this.autoScrollState.animationFrameId);
+                this.autoScrollState.animationFrameId = null;
+            }
             this.autoScrollState.isScrolling = false;
             this.autoScrollState.currentScrollDirection = null;
-            this.updateOverlays();
         },
         createSelectAllCorner() {
             if (!this.areaSelection.allSelection) return;
@@ -3050,11 +3064,18 @@ var script = {
         },
         updateOverlays() {
             if (!this.overlayManager) return;
-            this.$nextTick(() => {
+            if (!this.arraysEqual(this.selectedCells, this.lastSelectedCells)) {
                 this.overlayManager.updateOverlayForType("selection", this.selectedCells);
+                this.lastSelectedCells = [ ...this.selectedCells ];
+            }
+            if (!this.arraysEqual(this.copiedCells, this.lastCopiedCells)) {
                 this.overlayManager.updateOverlayForType("copyDash", this.copiedCells);
+                this.lastCopiedCells = [ ...this.copiedCells ];
+            }
+            if (!this.arraysEqual(this.extendedCells, this.lastExtendedCells)) {
                 this.overlayManager.updateOverlayForType("extended", this.extendedCells);
-            });
+                this.lastExtendedCells = [ ...this.extendedCells ];
+            }
         },
         removeAllEvents() {
             this.removeEvents();
@@ -3157,6 +3178,7 @@ var script = {
             }
             if (event.key === "Escape") {
                 this.clearCellSelection();
+                this.updateOverlays();
             }
         },
         detectClickType(event, tableEl) {
@@ -3197,6 +3219,7 @@ var script = {
             }
             if (!isInnerCell(event, tableEl)) {
                 this.clearCellSelection();
+                this.updateOverlays();
                 this.copiedCells = [];
                 return;
             }
@@ -3383,7 +3406,6 @@ var script = {
             if (!type) return;
             this.dragState.type = null;
             this.stopAutoScroll();
-            this.updateOverlays();
             if (type === "fill") {
                 this.handleFillDragEnd(event);
             } else if (type === "headerSelect") {
@@ -3430,7 +3452,6 @@ var script = {
         },
         clearCellSelection() {
             this.selectedCells = [];
-            this.updateOverlays();
             this.cellObserver.stopObserving();
         },
         destroyCellObserver() {
@@ -3818,7 +3839,7 @@ const __vue_script__ = script;
 
 const __vue_inject_styles__ = function(inject) {
     if (!inject) return;
-    inject("data-v-0711a85c_0", {
+    inject("data-v-00560bd2_0", {
         source: "\n.el-table-excel-wrapper {\r\n  outline: none;\n}\r\n/* 选中区域遮罩层样式 */\n.el-table .cell-selection-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  background-color: rgba(64, 158, 255, 0.1);\r\n  border: 1px solid #409eff;\r\n  border-radius: 2px;\n}\r\n\r\n/* 填充小方块 */\n.el-table .cell-selection-overlay .fill-handle {\r\n  pointer-events: auto;\r\n  position: absolute;\r\n  right: 0;\r\n  bottom: 0;\r\n  width: 4px;\r\n  height: 4px;\r\n  background-color: #409eff;\r\n  cursor: crosshair;\r\n  z-index: 3;\r\n  box-sizing: border-box;\r\n  border-radius: 1px;\n}\n.el-table .cell-selection-overlay .fill-handle:hover {\r\n  background-color: #40a9ff;\r\n  transform: scale(1.2);\r\n  box-shadow: 0 0 4px rgba(64, 158, 255, 0.5);\n}\n.el-table .cell-selection-overlay .fill-handle:active {\r\n  background-color: #096dd9;\r\n  transform: scale(1.1);\n}\r\n\r\n/* 复制虚线框样式 */\n.el-table .copy-dash-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  background: transparent;\r\n  border: 2px dashed #409eff;\r\n  border-radius: 2px;\n}\r\n\r\n/* 扩展选中区域样式 */\n.el-table .extended-selection-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  border: 2px dashed #909399;\r\n  border-radius: 2px;\n}\r\n\r\n/* 左上角全选角标样式 - 三角形设计 */\n.el-table .table-select-all-corner {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  width: 0;\r\n  height: 0;\r\n  border-style: solid;\r\n  border-width: 10px 10px 0 0;\r\n  border-color: #909399 transparent transparent transparent;\r\n  cursor: pointer;\r\n  z-index: 1002;\r\n  box-sizing: border-box;\n}\n.el-table .table-select-all-corner:active {\r\n  border-color: #409eff transparent transparent transparent;\n}\r\n",
         map: undefined,
         media: undefined
