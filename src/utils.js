@@ -318,8 +318,8 @@ export function calculateSelectionBounds(
   if (!topLeftCell || !bottomRightCell) return null;
 
   // 计算边界位置
-  const topLeftRect = getCachedBoundingClientRect(topLeftCell);
-  const bottomRightRect = getCachedBoundingClientRect(bottomRightCell);
+  const topLeftRect = topLeftCell.getBoundingClientRect();
+  const bottomRightRect = bottomRightCell.getBoundingClientRect();
 
   // 计算相对于容器的边界位置
   let leftBound = topLeftRect.left - wrapperRect.left + scrollLeft;
@@ -329,7 +329,7 @@ export function calculateSelectionBounds(
 
   // 如果有不同的边界单元格，需要检查它们
   if (topRightCell && topRightCell !== topLeftCell) {
-    const topRightRect = getCachedBoundingClientRect(topRightCell);
+    const topRightRect = topRightCell.getBoundingClientRect();
     rightBound = Math.max(
       rightBound,
       topRightRect.right - wrapperRect.left + scrollLeft
@@ -337,7 +337,7 @@ export function calculateSelectionBounds(
   }
 
   if (bottomLeftCell && bottomLeftCell !== topLeftCell) {
-    const bottomLeftRect = getCachedBoundingClientRect(bottomLeftCell);
+    const bottomLeftRect = bottomLeftCell.getBoundingClientRect();
     bottomBound = Math.max(
       bottomBound,
       bottomLeftRect.bottom - wrapperRect.top + scrollTop
@@ -659,17 +659,10 @@ function calculateRelativePosition(event, containerInfo) {
 
   let relativeMouseX, relativeMouseY;
 
-  if (type === "body") {
-    // 主表格需要考虑滚动偏移
-    const scrollLeft = container.scrollLeft;
-    const scrollTop = container.scrollTop;
-    relativeMouseX = event.clientX - containerRect.left + scrollLeft;
-    relativeMouseY = event.clientY - containerRect.top + scrollTop;
-  } else {
-    // 固定列不需要滚动偏移
-    relativeMouseX = event.clientX - containerRect.left;
-    relativeMouseY = event.clientY - containerRect.top;
-  }
+  const scrollLeft = container.scrollLeft;
+  const scrollTop = container.scrollTop;
+  relativeMouseX = event.clientX - containerRect.left + scrollLeft;
+  relativeMouseY = event.clientY - containerRect.top + scrollTop;
 
   return { relativeMouseX, relativeMouseY };
 }

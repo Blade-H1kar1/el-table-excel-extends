@@ -149,6 +149,7 @@ export default {
         isScrolling: false,
         scrollSpeed: this.scrollSpeed,
         currentScrollDirection: null,
+        animationFrameId: null,
       },
 
       // 撤销重做管理器
@@ -156,6 +157,11 @@ export default {
 
       // 拖拽缓存优化
       lastCellInfo: null,
+
+      // 遮罩层状态缓存
+      lastSelectedCells: [],
+      lastExtendedCells: [],
+      lastCopiedCells: [],
     };
   },
 
@@ -204,18 +210,38 @@ export default {
     cleanup() {
       this.removeAllEvents();
       this.destroyCellObserver();
+
+      // 清理自动滚动
+      this.stopAutoScroll();
+
       if (this.overlayManager) {
         this.overlayManager.destroy();
         this.overlayManager = null;
       }
     },
 
+    // 比较两个数组是否相等
+    arraysEqual(arr1, arr2) {
+      if (arr1.length !== arr2.length) return false;
+      return arr1.every(
+        (item, index) =>
+          arr2[index].columnIndex === item.columnIndex &&
+          arr2[index].rowIndex === item.rowIndex
+      );
+    },
+
     // ========== 自动滚动相关方法 ==========
     // 开始自动滚动
     startAutoScroll(scrollDirection) {
       if (!this.areaSelection.autoScroll) return;
-      if (this.autoScrollState.isScrolling) {
-        // 如果已经在滚动，更新滚动方向
+      if (
+        this.autoScrollState.isScrolling &&
+        this.autoScrollState.animationFrameId
+      ) {
+        cancelAnimationFrame(this.autoScrollState.animationFrameId);
+        this.autoScrollState.animationFrameId = null;
+        this.autoScrollState.currentScrollDirection = scrollDirection;
+      } else if (this.autoScrollState.isScrolling) {
         this.autoScrollState.currentScrollDirection = scrollDirection;
         return;
       }
@@ -239,7 +265,10 @@ export default {
       const { scrollSpeed } = this.autoScrollState;
 
       const scrollAnimation = () => {
-        if (!this.autoScrollState.isScrolling) return;
+        if (!this.autoScrollState.isScrolling) {
+          this.autoScrollState.animationFrameId = null;
+          return;
+        }
 
         const currentDirection = this.autoScrollState.currentScrollDirection;
         let scrolled = false;
@@ -293,20 +322,27 @@ export default {
 
         // 继续滚动或停止
         if (this.autoScrollState.isScrolling && scrolled) {
-          requestAnimationFrame(scrollAnimation);
+          this.autoScrollState.animationFrameId =
+            requestAnimationFrame(scrollAnimation);
         } else {
           this.stopAutoScroll();
         }
       };
 
-      requestAnimationFrame(scrollAnimation);
+      this.autoScrollState.animationFrameId =
+        requestAnimationFrame(scrollAnimation);
     },
 
     // 停止自动滚动
     stopAutoScroll() {
+      // 取消动画帧
+      if (this.autoScrollState.animationFrameId) {
+        cancelAnimationFrame(this.autoScrollState.animationFrameId);
+        this.autoScrollState.animationFrameId = null;
+      }
+
       this.autoScrollState.isScrolling = false;
       this.autoScrollState.currentScrollDirection = null;
-      this.updateOverlays();
     },
 
     // 创建全选角标
@@ -367,22 +403,29 @@ export default {
     updateOverlays() {
       if (!this.overlayManager) return;
 
-      this.$nextTick(() => {
-        // 更新选中遮罩层
+      // 检查selectedCells是否发生变化
+      if (!this.arraysEqual(this.selectedCells, this.lastSelectedCells)) {
         this.overlayManager.updateOverlayForType(
           "selection",
           this.selectedCells
         );
+        this.lastSelectedCells = [...this.selectedCells];
+      }
 
-        // 更新复制虚线遮罩层
+      // 检查copiedCells是否发生变化;
+      if (!this.arraysEqual(this.copiedCells, this.lastCopiedCells)) {
         this.overlayManager.updateOverlayForType("copyDash", this.copiedCells);
+        this.lastCopiedCells = [...this.copiedCells];
+      }
 
-        // 更新扩展选择遮罩层
+      // 检查extendedCells是否发生变化
+      if (!this.arraysEqual(this.extendedCells, this.lastExtendedCells)) {
         this.overlayManager.updateOverlayForType(
           "extended",
           this.extendedCells
         );
-      });
+        this.lastExtendedCells = [...this.extendedCells];
+      }
     },
 
     // ========== 事件管理 ==========
@@ -530,6 +573,7 @@ export default {
       // Escape 清除选择
       if (event.key === "Escape") {
         this.clearCellSelection();
+        this.updateOverlays();
       }
     },
 
@@ -569,6 +613,7 @@ export default {
       if (!isInnerCell(event, tableEl)) {
         // 点击在表格外部，清除所有选中
         this.clearCellSelection();
+        this.updateOverlays();
         this.copiedCells = [];
         return;
       }
@@ -852,7 +897,6 @@ export default {
       this.dragState.type = null;
       // 停止自动滚动
       this.stopAutoScroll();
-      this.updateOverlays();
       // 根据拖拽类型分发处理
       if (type === "fill") {
         this.handleFillDragEnd(event);
@@ -916,10 +960,6 @@ export default {
     // 清除所有单元格选择
     clearCellSelection() {
       this.selectedCells = [];
-
-      // 统一更新所有遮罩层状态
-      this.updateOverlays();
-
       this.cellObserver.stopObserving();
     },
 
