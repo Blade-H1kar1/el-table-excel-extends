@@ -690,7 +690,11 @@ export function getHeaderText(tableEl, columnIndex) {
 export function detectScrollDirection(event, tableWrapper) {
   const rect = getCachedBoundingClientRect(tableWrapper);
   const { clientX, clientY } = event;
-  const edgeThreshold = 20;
+
+  const verticalScrollbarWidth =
+    tableWrapper.offsetWidth - tableWrapper.clientWidth;
+  const horizontalScrollbarHeight =
+    tableWrapper.offsetHeight - tableWrapper.clientHeight;
 
   const scrollDirection = {
     up: false,
@@ -701,36 +705,41 @@ export function detectScrollDirection(event, tableWrapper) {
 
   // 检测垂直方向
   // 鼠标在表格上方或在表格内但靠近上边界
-  if (
-    (clientY < rect.top || clientY < rect.top + edgeThreshold) &&
-    tableWrapper.scrollTop > 0
-  ) {
+  if (clientY < rect.top && tableWrapper.scrollTop > 0) {
     scrollDirection.up = true;
+    // 计算距离边界的距离
+    scrollDirection.upDistance = rect.top - clientY;
   }
   // 鼠标在表格下方或在表格内但靠近下边界
   else if (
-    (clientY > rect.bottom || clientY > rect.bottom - edgeThreshold) &&
+    clientY > rect.bottom - verticalScrollbarWidth &&
     tableWrapper.scrollTop <
       tableWrapper.scrollHeight - tableWrapper.clientHeight
   ) {
     scrollDirection.down = true;
+    // 计算距离边界的距离
+    scrollDirection.downDistance =
+      clientY - (rect.bottom - verticalScrollbarWidth);
   }
 
   // 检测水平方向
   // 鼠标在表格左侧或在表格内但靠近左边界
-  if (
-    (clientX < rect.left || clientX < rect.left + edgeThreshold) &&
-    tableWrapper.scrollLeft > 0
-  ) {
+  if (clientX < rect.left && tableWrapper.scrollLeft > 0) {
     scrollDirection.left = true;
+    // 计算距离边界的距离
+    scrollDirection.leftDistance = rect.left - clientX;
   }
   // 鼠标在表格右侧或在表格内但靠近右边界
   else if (
-    (clientX > rect.right || clientX > rect.right - edgeThreshold) &&
+    (clientX > rect.right ||
+      clientX > rect.right - horizontalScrollbarHeight) &&
     tableWrapper.scrollLeft <
       tableWrapper.scrollWidth - tableWrapper.clientWidth
   ) {
     scrollDirection.right = true;
+    // 计算距离边界的距离
+    scrollDirection.rightDistance =
+      clientX - (rect.right - horizontalScrollbarHeight);
   }
 
   // 如果有任何方向需要滚动，返回滚动方向
@@ -978,4 +987,18 @@ export function toTreeArray(tree, options = {}) {
   traverse(tree);
 
   return result;
+}
+
+// 计算动态滚动速度（距离越远，速度越大）
+export function calculateDynamicSpeed(distance, baseScrollSpeed = 10) {
+  const maxDistance = 50; // 最大检测距离
+  const maxSpeedMultiplier = 5; // 最大速度倍数
+  const minSpeedMultiplier = 0.1; // 最小速度倍数
+
+  const clampedDistance = Math.max(0, Math.min(distance, maxDistance));
+  const speedMultiplier =
+    minSpeedMultiplier +
+    (clampedDistance / maxDistance) * (maxSpeedMultiplier - minSpeedMultiplier);
+
+  return Math.round(baseScrollSpeed * speedMultiplier);
 }

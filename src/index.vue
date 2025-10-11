@@ -11,6 +11,7 @@ import {
   readClipboardData,
   getColumnCount,
   isInnerCell,
+  calculateDynamicSpeed,
 } from "./utils.js";
 
 import { UndoRedoManager } from "./undoRedoManager.js";
@@ -206,6 +207,7 @@ export default {
       const tableEl = this.getTableElement();
       return tableEl?.querySelector(".el-table__body-wrapper") || tableEl;
     },
+
     // 清理所有资源
     cleanup() {
       this.removeAllEvents();
@@ -262,7 +264,7 @@ export default {
       this.autoScrollState.currentScrollDirection = scrollDirection;
 
       const scrollThreshold = 5; // 边界阈值，避免精确比较
-      const { scrollSpeed } = this.autoScrollState;
+      const baseScrollSpeed = this.autoScrollState.scrollSpeed;
 
       const scrollAnimation = () => {
         if (!this.autoScrollState.isScrolling) {
@@ -275,9 +277,17 @@ export default {
 
         // 垂直滚动处理
         if (currentDirection.up && tableWrapper.scrollTop > scrollThreshold) {
+
+          const dynamicSpeed = currentDirection.upDistance
+            ? calculateDynamicSpeed(
+                currentDirection.upDistance,
+                baseScrollSpeed
+              )
+            : baseScrollSpeed;
+
           tableWrapper.scrollTop = Math.max(
             0,
-            tableWrapper.scrollTop - scrollSpeed
+            tableWrapper.scrollTop - dynamicSpeed
           );
           scrolled = true;
         }
@@ -288,9 +298,16 @@ export default {
               tableWrapper.clientHeight -
               scrollThreshold
         ) {
+          const dynamicSpeed = currentDirection.downDistance
+            ? calculateDynamicSpeed(
+                currentDirection.downDistance,
+                baseScrollSpeed
+              )
+            : baseScrollSpeed;
+
           tableWrapper.scrollTop = Math.min(
             tableWrapper.scrollHeight - tableWrapper.clientHeight,
-            tableWrapper.scrollTop + scrollSpeed
+            tableWrapper.scrollTop + dynamicSpeed
           );
           scrolled = true;
         }
@@ -300,9 +317,15 @@ export default {
           currentDirection.left &&
           tableWrapper.scrollLeft > scrollThreshold
         ) {
+          const dynamicSpeed = currentDirection.leftDistance
+            ? calculateDynamicSpeed(
+                currentDirection.leftDistance,
+                baseScrollSpeed
+              )
+            : baseScrollSpeed;
           tableWrapper.scrollLeft = Math.max(
             0,
-            tableWrapper.scrollLeft - scrollSpeed
+            tableWrapper.scrollLeft - dynamicSpeed
           );
           scrolled = true;
         }
@@ -313,9 +336,15 @@ export default {
               tableWrapper.clientWidth -
               scrollThreshold
         ) {
+          const dynamicSpeed = currentDirection.rightDistance
+            ? calculateDynamicSpeed(
+                currentDirection.rightDistance,
+                baseScrollSpeed
+              )
+            : baseScrollSpeed;
           tableWrapper.scrollLeft = Math.min(
             tableWrapper.scrollWidth - tableWrapper.clientWidth,
-            tableWrapper.scrollLeft + scrollSpeed
+            tableWrapper.scrollLeft + dynamicSpeed
           );
           scrolled = true;
         }
@@ -613,8 +642,8 @@ export default {
       if (!isInnerCell(event, tableEl)) {
         // 点击在表格外部，清除所有选中
         this.clearCellSelection();
-        this.updateOverlays();
         this.copiedCells = [];
+        this.updateOverlays();
         return;
       }
 
