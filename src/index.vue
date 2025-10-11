@@ -277,7 +277,6 @@ export default {
 
         // 垂直滚动处理
         if (currentDirection.up && tableWrapper.scrollTop > scrollThreshold) {
-
           const dynamicSpeed = currentDirection.upDistance
             ? calculateDynamicSpeed(
                 currentDirection.upDistance,
@@ -423,17 +422,20 @@ export default {
         this.cellObserver = new CellObserver({
           tableEl: this.getTableElement(),
           updated: () => {
-            this.updateOverlays();
+            this.updateOverlays(true);
           },
         });
       });
     },
     // 更新所有遮罩层
-    updateOverlays() {
+    updateOverlays(force) {
       if (!this.overlayManager) return;
 
       // 检查selectedCells是否发生变化
-      if (!this.arraysEqual(this.selectedCells, this.lastSelectedCells)) {
+      if (
+        force ||
+        !this.arraysEqual(this.selectedCells, this.lastSelectedCells)
+      ) {
         this.overlayManager.updateOverlayForType(
           "selection",
           this.selectedCells
@@ -442,13 +444,16 @@ export default {
       }
 
       // 检查copiedCells是否发生变化;
-      if (!this.arraysEqual(this.copiedCells, this.lastCopiedCells)) {
+      if (force || !this.arraysEqual(this.copiedCells, this.lastCopiedCells)) {
         this.overlayManager.updateOverlayForType("copyDash", this.copiedCells);
         this.lastCopiedCells = [...this.copiedCells];
       }
 
       // 检查extendedCells是否发生变化
-      if (!this.arraysEqual(this.extendedCells, this.lastExtendedCells)) {
+      if (
+        force ||
+        !this.arraysEqual(this.extendedCells, this.lastExtendedCells)
+      ) {
         this.overlayManager.updateOverlayForType(
           "extended",
           this.extendedCells
@@ -493,7 +498,6 @@ export default {
       this.getTableElement().removeEventListener("keydown", this.handleKeyDown);
       document.removeEventListener("mousedown", this.handleGlobalMouseDown);
     },
-
     // 键盘事件处理
     handleKeyDown(event) {
       const tableEl = this.getTableElement();
@@ -550,6 +554,7 @@ export default {
           console.warn("剪切操作被禁用");
           return;
         }
+        event.preventDefault();
         this.copyCellsValues(true);
       }
 
@@ -560,6 +565,7 @@ export default {
           console.warn("粘贴操作被禁用");
           return;
         }
+        event.preventDefault();
         this.pasteCellsValues();
       }
 
@@ -573,6 +579,7 @@ export default {
           console.warn("重做操作被禁用");
           return;
         }
+        event.preventDefault();
         this.executeRedo();
         return;
       }
@@ -584,6 +591,7 @@ export default {
           console.warn("撤销操作被禁用");
           return;
         }
+        event.preventDefault();
         this.executeUndo();
       }
 
