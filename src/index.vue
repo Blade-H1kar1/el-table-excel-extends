@@ -518,7 +518,7 @@ export default {
     handleKeyDown(event) {
       const tableEl = this.getTableElement();
       if (!tableEl) return;
-
+      if (this.dTarget) return;
       // Ctrl+A 全选
       if (event.ctrlKey && event.key === "a") {
         // 检查全选权限
@@ -575,7 +575,7 @@ export default {
       }
 
       // Ctrl+V 粘贴
-      if (event.ctrlKey && event.key === "v" && !this.dTarget) {
+      if (event.ctrlKey && event.key === "v") {
         // 检查粘贴权限
         if (!this.areaSelection.paste) {
           console.warn("粘贴操作被禁用");

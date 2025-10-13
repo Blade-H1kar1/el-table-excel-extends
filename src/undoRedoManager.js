@@ -13,6 +13,9 @@ export class UndoRedoManager {
     this.currentIndex = -1;
   }
 
+  hasHistory() {
+    return this.stack.length > 0;
+  }
   /**
    * 记录操作历史
    * @param {string} operationType - 操作类型 ('paste', 'cut', 'fill', 'clear')
