@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/Blade-H1kar1/el-table-excel-extends/compare/v1.1.2...v1.2.0) (2025-10-13)
+
+
+### Features
+
+* 新增双击取消选中并恢复默认操作 ([38fdd4e](https://github.com/Blade-H1kar1/el-table-excel-extends/commit/38fdd4e10746b79b000ed6f47b484b1a9ba88030))
+* 自动滚动新增距离感应，优化体验 ([dbf0cdf](https://github.com/Blade-H1kar1/el-table-excel-extends/commit/dbf0cdfc402661111b5fde60c6db2e0e72eb3186))
+
+
+### Bug Fixes
+
+* bug修复 ([91cb3b8](https://github.com/Blade-H1kar1/el-table-excel-extends/commit/91cb3b81e35b771c179f1a843061bbbf9074b0d8))
+
 ### [1.1.2](https://github.com/Blade-H1kar1/el-table-excel-extends/compare/v1.1.1...v1.1.2) (2025-10-10)
 
 
