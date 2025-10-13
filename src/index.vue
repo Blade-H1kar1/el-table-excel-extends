@@ -491,12 +491,28 @@ export default {
     initEvents() {
       this.getTableElement().addEventListener("keydown", this.handleKeyDown);
       document.addEventListener("mousedown", this.handleGlobalMouseDown);
+      this.getTableElement().addEventListener(
+        "dblclick",
+        this.handleGlobalDblclick
+      );
     },
 
     // 移除事件
     removeEvents() {
       this.getTableElement().removeEventListener("keydown", this.handleKeyDown);
       document.removeEventListener("mousedown", this.handleGlobalMouseDown);
+      this.getTableElement().removeEventListener(
+        "dblclick",
+        this.handleGlobalDblclick
+      );
+    },
+    // 双击取消选中并恢复默认操作
+    handleGlobalDblclick(event) {
+      const tableEl = this.getTableElement();
+      tableEl.style.userSelect = null;
+      this.dTarget = getBoundaryCellFromMousePosition(event, tableEl);
+      this.clearCellSelection();
+      this.updateOverlays();
     },
     // 键盘事件处理
     handleKeyDown(event) {
@@ -559,7 +575,7 @@ export default {
       }
 
       // Ctrl+V 粘贴
-      if (event.ctrlKey && event.key === "v") {
+      if (event.ctrlKey && event.key === "v" && !this.dTarget) {
         // 检查粘贴权限
         if (!this.areaSelection.paste) {
           console.warn("粘贴操作被禁用");
@@ -650,7 +666,7 @@ export default {
       if (!isInnerCell(event, tableEl)) {
         // 点击在表格外部，清除所有选中
         this.clearCellSelection();
-        this.copiedCells = [];
+        this.dTarget = null;
         this.updateOverlays();
         return;
       }
@@ -671,8 +687,16 @@ export default {
       // 检测点击类型并分发处理
       const clickInfo = this.detectClickType(event, tableEl);
       this.dragState.startClickInfo = clickInfo;
+      const { cellInfo } = clickInfo;
+      const dT = this.dTarget;
+      if (
+        dT &&
+        cellInfo.rowIndex === dT.rowIndex &&
+        cellInfo.columnIndex === dT.columnIndex
+      )
+        return;
+      this.dTarget = null;
       this.handleUnifiedMouseDown(event, clickInfo);
-
       tableEl.style.userSelect = "none";
     },
 
@@ -997,6 +1021,7 @@ export default {
     // 清除所有单元格选择
     clearCellSelection() {
       this.selectedCells = [];
+      this.copiedCells = [];
       this.cellObserver.stopObserving();
     },
 
