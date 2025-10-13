@@ -670,7 +670,6 @@ function calculateRelativePosition(event, containerInfo) {
 // 获取表头文本
 export function getHeaderText(tableEl, columnIndex) {
   if (!tableEl) return "";
-
   const headerRow = tableEl.querySelector(
     ".el-table__header-wrapper .el-table__header thead tr"
   );
@@ -680,8 +679,7 @@ export function getHeaderText(tableEl, columnIndex) {
 
   if (columnIndex >= 0 && columnIndex < headerCells.length) {
     const headerCell = headerCells[columnIndex];
-    const cellContent = headerCell.querySelector(".content");
-    return cellContent ? cellContent.textContent?.trim() || "" : "";
+    return headerCell?.innerText || headerCell?.textContent?.trim() || "";
   }
   return "";
 }

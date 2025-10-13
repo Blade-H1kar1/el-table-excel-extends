@@ -517,8 +517,8 @@ export default {
     // 键盘事件处理
     handleKeyDown(event) {
       const tableEl = this.getTableElement();
-      if (!tableEl) return;
-      if (this.dTarget) return;
+      if (!tableEl || this.dTarget) return;
+      event.preventDefault();
       // Ctrl+A 全选
       if (event.ctrlKey && event.key === "a") {
         // 检查全选权限
@@ -526,8 +526,6 @@ export default {
           console.warn("全选操作被禁用");
           return;
         }
-        event.preventDefault();
-        event.stopPropagation();
         // 全选
         const columnCount = getColumnCount(this.getTableElement());
         const rowCount = Math.max(this.rowCount, 1); // 至少选择1行，即使没有数据
@@ -570,7 +568,6 @@ export default {
           console.warn("剪切操作被禁用");
           return;
         }
-        event.preventDefault();
         this.copyCellsValues(true);
       }
 
@@ -581,7 +578,6 @@ export default {
           console.warn("粘贴操作被禁用");
           return;
         }
-        event.preventDefault();
         this.pasteCellsValues();
       }
 
@@ -595,7 +591,6 @@ export default {
           console.warn("重做操作被禁用");
           return;
         }
-        event.preventDefault();
         this.executeRedo();
         return;
       }
@@ -607,7 +602,6 @@ export default {
           console.warn("撤销操作被禁用");
           return;
         }
-        event.preventDefault();
         this.executeUndo();
       }
 
@@ -618,7 +612,6 @@ export default {
           console.warn("清空操作被禁用");
           return;
         }
-        event.preventDefault();
         this.clearCells(this.selectedCells, "clear");
         return;
       }
