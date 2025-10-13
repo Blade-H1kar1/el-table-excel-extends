@@ -818,10 +818,10 @@
               console.log("复制数据:", copiedData);
             },
 
-            onExcelPaste({ affectedCells, pastedData, bounds }) {
-              this.logOperation(`粘贴了 ${affectedCells.length} 个单元格`);
+            onExcelPaste({ pastedCells, pastedData, bounds }) {
+              this.logOperation(`粘贴了 ${pastedCells.length} 个单元格`);
               this.$message.success(
-                `成功粘贴 ${affectedCells.length} 个单元格`
+                `成功粘贴 ${pastedCells.length} 个单元格`
               );
             },
 
