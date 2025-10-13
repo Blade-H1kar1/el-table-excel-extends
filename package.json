@@ -1,6 +1,6 @@
 {
   "name": "el-table-excel-extends",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "description": "一个为Element UI表格提供Excel类似功能的Vue组件，支持复制、粘贴、填充、撤销重做等功能",
   "main": "dist/index.js",
