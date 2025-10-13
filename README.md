@@ -34,7 +34,7 @@ npm install el-table-excel-extends
 | Ctrl + Shift + C         | 复制带表头 | 复制选中区域的数据并携带表头 |
 | Ctrl+X                   | 剪切       | 剪切选中单元格内容           |
 | Ctrl+V                   | 粘贴       | 粘贴内容到选中区域           |
-| Delete、Backspace        | 清空       | 清空选中单元格内容           |
+| Delete        | 清空       | 清空选中单元格内容           |
 | **撤销重做**             |            |                              |
 | Ctrl+Z                   | 撤销       | 撤销上一步操作               |
 | Ctrl+Y、Ctrl + Shift + Z | 重做       | 重做下一步操作               |

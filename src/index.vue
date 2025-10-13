@@ -611,8 +611,8 @@ export default {
         this.executeUndo();
       }
 
-      // Delete 或 Backspace 清空选中单元格
-      if (event.key === "Delete" || event.key === "Backspace") {
+      // Delete 清空选中单元格
+      if (event.key === "Delete") {
         // 检查清空权限
         if (!this.areaSelection.clear) {
           console.warn("清空操作被禁用");
