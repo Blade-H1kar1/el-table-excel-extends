@@ -421,22 +421,27 @@ function getHeaderText(tableEl, columnIndex) {
 function detectScrollDirection(event, tableWrapper) {
     const rect = getCachedBoundingClientRect(tableWrapper);
     const {clientX: clientX, clientY: clientY} = event;
-    const edgeThreshold = 20;
+    const verticalScrollbarWidth = tableWrapper.offsetWidth - tableWrapper.clientWidth;
+    const horizontalScrollbarHeight = tableWrapper.offsetHeight - tableWrapper.clientHeight;
     const scrollDirection = {
         up: false,
         down: false,
         left: false,
         right: false
     };
-    if ((clientY < rect.top || clientY < rect.top + edgeThreshold) && tableWrapper.scrollTop > 0) {
+    if (clientY < rect.top && tableWrapper.scrollTop > 0) {
         scrollDirection.up = true;
-    } else if ((clientY > rect.bottom || clientY > rect.bottom - edgeThreshold) && tableWrapper.scrollTop < tableWrapper.scrollHeight - tableWrapper.clientHeight) {
+        scrollDirection.upDistance = rect.top - clientY;
+    } else if (clientY > rect.bottom - verticalScrollbarWidth && tableWrapper.scrollTop < tableWrapper.scrollHeight - tableWrapper.clientHeight) {
         scrollDirection.down = true;
+        scrollDirection.downDistance = clientY - (rect.bottom - verticalScrollbarWidth);
     }
-    if ((clientX < rect.left || clientX < rect.left + edgeThreshold) && tableWrapper.scrollLeft > 0) {
+    if (clientX < rect.left && tableWrapper.scrollLeft > 0) {
         scrollDirection.left = true;
-    } else if ((clientX > rect.right || clientX > rect.right - edgeThreshold) && tableWrapper.scrollLeft < tableWrapper.scrollWidth - tableWrapper.clientWidth) {
+        scrollDirection.leftDistance = rect.left - clientX;
+    } else if ((clientX > rect.right || clientX > rect.right - horizontalScrollbarHeight) && tableWrapper.scrollLeft < tableWrapper.scrollWidth - tableWrapper.clientWidth) {
         scrollDirection.right = true;
+        scrollDirection.rightDistance = clientX - (rect.right - horizontalScrollbarHeight);
     }
     if (scrollDirection.up || scrollDirection.down || scrollDirection.left || scrollDirection.right) {
         return scrollDirection;
@@ -609,6 +614,15 @@ function toTreeArray(tree, options = {}) {
     }
     traverse(tree);
     return result;
+}
+
+function calculateDynamicSpeed(distance, baseScrollSpeed = 10) {
+    const maxDistance = 50;
+    const maxSpeedMultiplier = 5;
+    const minSpeedMultiplier = .1;
+    const clampedDistance = Math.max(0, Math.min(distance, maxDistance));
+    const speedMultiplier = minSpeedMultiplier + clampedDistance / maxDistance * (maxSpeedMultiplier - minSpeedMultiplier);
+    return Math.round(baseScrollSpeed * speedMultiplier);
 }
 
 class UndoRedoManager {
@@ -2980,7 +2994,7 @@ var script = {
             this.autoScrollState.isScrolling = true;
             this.autoScrollState.currentScrollDirection = scrollDirection;
             const scrollThreshold = 5;
-            const {scrollSpeed: scrollSpeed} = this.autoScrollState;
+            const baseScrollSpeed = this.autoScrollState.scrollSpeed;
             const scrollAnimation = () => {
                 if (!this.autoScrollState.isScrolling) {
                     this.autoScrollState.animationFrameId = null;
@@ -2989,19 +3003,23 @@ var script = {
                 const currentDirection = this.autoScrollState.currentScrollDirection;
                 let scrolled = false;
                 if (currentDirection.up && tableWrapper.scrollTop > scrollThreshold) {
-                    tableWrapper.scrollTop = Math.max(0, tableWrapper.scrollTop - scrollSpeed);
+                    const dynamicSpeed = currentDirection.upDistance ? calculateDynamicSpeed(currentDirection.upDistance, baseScrollSpeed) : baseScrollSpeed;
+                    tableWrapper.scrollTop = Math.max(0, tableWrapper.scrollTop - dynamicSpeed);
                     scrolled = true;
                 }
                 if (currentDirection.down && tableWrapper.scrollTop < tableWrapper.scrollHeight - tableWrapper.clientHeight - scrollThreshold) {
-                    tableWrapper.scrollTop = Math.min(tableWrapper.scrollHeight - tableWrapper.clientHeight, tableWrapper.scrollTop + scrollSpeed);
+                    const dynamicSpeed = currentDirection.downDistance ? calculateDynamicSpeed(currentDirection.downDistance, baseScrollSpeed) : baseScrollSpeed;
+                    tableWrapper.scrollTop = Math.min(tableWrapper.scrollHeight - tableWrapper.clientHeight, tableWrapper.scrollTop + dynamicSpeed);
                     scrolled = true;
                 }
                 if (currentDirection.left && tableWrapper.scrollLeft > scrollThreshold) {
-                    tableWrapper.scrollLeft = Math.max(0, tableWrapper.scrollLeft - scrollSpeed);
+                    const dynamicSpeed = currentDirection.leftDistance ? calculateDynamicSpeed(currentDirection.leftDistance, baseScrollSpeed) : baseScrollSpeed;
+                    tableWrapper.scrollLeft = Math.max(0, tableWrapper.scrollLeft - dynamicSpeed);
                     scrolled = true;
                 }
                 if (currentDirection.right && tableWrapper.scrollLeft < tableWrapper.scrollWidth - tableWrapper.clientWidth - scrollThreshold) {
-                    tableWrapper.scrollLeft = Math.min(tableWrapper.scrollWidth - tableWrapper.clientWidth, tableWrapper.scrollLeft + scrollSpeed);
+                    const dynamicSpeed = currentDirection.rightDistance ? calculateDynamicSpeed(currentDirection.rightDistance, baseScrollSpeed) : baseScrollSpeed;
+                    tableWrapper.scrollLeft = Math.min(tableWrapper.scrollWidth - tableWrapper.clientWidth, tableWrapper.scrollLeft + dynamicSpeed);
                     scrolled = true;
                 }
                 if (this.autoScrollState.isScrolling && scrolled) {
@@ -3057,22 +3075,22 @@ var script = {
                 this.cellObserver = new CellObserver({
                     tableEl: this.getTableElement(),
                     updated: () => {
-                        this.updateOverlays();
+                        this.updateOverlays(true);
                     }
                 });
             });
         },
-        updateOverlays() {
+        updateOverlays(force) {
             if (!this.overlayManager) return;
-            if (!this.arraysEqual(this.selectedCells, this.lastSelectedCells)) {
+            if (force || !this.arraysEqual(this.selectedCells, this.lastSelectedCells)) {
                 this.overlayManager.updateOverlayForType("selection", this.selectedCells);
                 this.lastSelectedCells = [ ...this.selectedCells ];
             }
-            if (!this.arraysEqual(this.copiedCells, this.lastCopiedCells)) {
+            if (force || !this.arraysEqual(this.copiedCells, this.lastCopiedCells)) {
                 this.overlayManager.updateOverlayForType("copyDash", this.copiedCells);
                 this.lastCopiedCells = [ ...this.copiedCells ];
             }
-            if (!this.arraysEqual(this.extendedCells, this.lastExtendedCells)) {
+            if (force || !this.arraysEqual(this.extendedCells, this.lastExtendedCells)) {
                 this.overlayManager.updateOverlayForType("extended", this.extendedCells);
                 this.lastExtendedCells = [ ...this.extendedCells ];
             }
@@ -3096,10 +3114,19 @@ var script = {
         initEvents() {
             this.getTableElement().addEventListener("keydown", this.handleKeyDown);
             document.addEventListener("mousedown", this.handleGlobalMouseDown);
+            this.getTableElement().addEventListener("dblclick", this.handleGlobalDblclick);
         },
         removeEvents() {
             this.getTableElement().removeEventListener("keydown", this.handleKeyDown);
             document.removeEventListener("mousedown", this.handleGlobalMouseDown);
+            this.getTableElement().removeEventListener("dblclick", this.handleGlobalDblclick);
+        },
+        handleGlobalDblclick(event) {
+            const tableEl = this.getTableElement();
+            tableEl.style.userSelect = null;
+            this.dTarget = getBoundaryCellFromMousePosition(event, tableEl);
+            this.clearCellSelection();
+            this.updateOverlays();
         },
         handleKeyDown(event) {
             const tableEl = this.getTableElement();
@@ -3143,13 +3170,15 @@ var script = {
                     console.warn("剪切操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.copyCellsValues(true);
             }
-            if (event.ctrlKey && event.key === "v") {
+            if (event.ctrlKey && event.key === "v" && !this.dTarget) {
                 if (!this.areaSelection.paste) {
                     console.warn("粘贴操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.pasteCellsValues();
             }
             if (event.ctrlKey && event.shiftKey && event.key === "Z" || event.ctrlKey && event.key === "y") {
@@ -3157,6 +3186,7 @@ var script = {
                     console.warn("重做操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.executeRedo();
                 return;
             }
@@ -3165,6 +3195,7 @@ var script = {
                     console.warn("撤销操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.executeUndo();
             }
             if (event.key === "Delete" || event.key === "Backspace") {
@@ -3219,8 +3250,8 @@ var script = {
             }
             if (!isInnerCell(event, tableEl)) {
                 this.clearCellSelection();
+                this.dTarget = null;
                 this.updateOverlays();
-                this.copiedCells = [];
                 return;
             }
             if (event.button !== 0) return;
@@ -3230,6 +3261,10 @@ var script = {
             }
             const clickInfo = this.detectClickType(event, tableEl);
             this.dragState.startClickInfo = clickInfo;
+            const {cellInfo: cellInfo} = clickInfo;
+            const dT = this.dTarget;
+            if (dT && cellInfo.rowIndex === dT.rowIndex && cellInfo.columnIndex === dT.columnIndex) return;
+            this.dTarget = null;
             this.handleUnifiedMouseDown(event, clickInfo);
             tableEl.style.userSelect = "none";
         },
@@ -3452,6 +3487,7 @@ var script = {
         },
         clearCellSelection() {
             this.selectedCells = [];
+            this.copiedCells = [];
             this.cellObserver.stopObserving();
         },
         destroyCellObserver() {
@@ -3839,7 +3875,7 @@ const __vue_script__ = script;
 
 const __vue_inject_styles__ = function(inject) {
     if (!inject) return;
-    inject("data-v-00560bd2_0", {
+    inject("data-v-b53a1874_0", {
         source: "\n.el-table-excel-wrapper {\r\n  outline: none;\n}\r\n/* 选中区域遮罩层样式 */\n.el-table .cell-selection-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  background-color: rgba(64, 158, 255, 0.1);\r\n  border: 1px solid #409eff;\r\n  border-radius: 2px;\n}\r\n\r\n/* 填充小方块 */\n.el-table .cell-selection-overlay .fill-handle {\r\n  pointer-events: auto;\r\n  position: absolute;\r\n  right: 0;\r\n  bottom: 0;\r\n  width: 4px;\r\n  height: 4px;\r\n  background-color: #409eff;\r\n  cursor: crosshair;\r\n  z-index: 3;\r\n  box-sizing: border-box;\r\n  border-radius: 1px;\n}\n.el-table .cell-selection-overlay .fill-handle:hover {\r\n  background-color: #40a9ff;\r\n  transform: scale(1.2);\r\n  box-shadow: 0 0 4px rgba(64, 158, 255, 0.5);\n}\n.el-table .cell-selection-overlay .fill-handle:active {\r\n  background-color: #096dd9;\r\n  transform: scale(1.1);\n}\r\n\r\n/* 复制虚线框样式 */\n.el-table .copy-dash-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  background: transparent;\r\n  border: 2px dashed #409eff;\r\n  border-radius: 2px;\n}\r\n\r\n/* 扩展选中区域样式 */\n.el-table .extended-selection-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  border: 2px dashed #909399;\r\n  border-radius: 2px;\n}\r\n\r\n/* 左上角全选角标样式 - 三角形设计 */\n.el-table .table-select-all-corner {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  width: 0;\r\n  height: 0;\r\n  border-style: solid;\r\n  border-width: 10px 10px 0 0;\r\n  border-color: #909399 transparent transparent transparent;\r\n  cursor: pointer;\r\n  z-index: 1002;\r\n  box-sizing: border-box;\n}\n.el-table .table-select-all-corner:active {\r\n  border-color: #409eff transparent transparent transparent;\n}\r\n",
         map: undefined,
         media: undefined
