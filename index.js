@@ -3133,12 +3133,12 @@ var script = {
         handleKeyDown(event) {
             const tableEl = this.getTableElement();
             if (!tableEl || this.dTarget) return;
-            event.preventDefault();
             if (event.ctrlKey && event.key === "a") {
                 if (!this.areaSelection.allSelection) {
                     console.warn("全选操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 const columnCount = getColumnCount(this.getTableElement());
                 const rowCount = Math.max(this.rowCount, 1);
                 if (rowCount > 0 && columnCount > 0) {
@@ -3156,6 +3156,7 @@ var script = {
                     console.warn("复制操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.copyCellsValues(false, true);
                 return;
             }
@@ -3164,6 +3165,7 @@ var script = {
                     console.warn("复制操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.copyCellsValues();
             }
             if (event.ctrlKey && event.key === "x") {
@@ -3171,6 +3173,7 @@ var script = {
                     console.warn("剪切操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.copyCellsValues(true);
             }
             if (event.ctrlKey && event.key === "v") {
@@ -3178,6 +3181,7 @@ var script = {
                     console.warn("粘贴操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.pasteCellsValues();
             }
             if (event.ctrlKey && event.shiftKey && event.key === "Z" || event.ctrlKey && event.key === "y") {
@@ -3185,14 +3189,16 @@ var script = {
                     console.warn("重做操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.executeRedo();
                 return;
             }
-            if (event.ctrlKey && event.key === "z") {
+            if (event.ctrlKey && event.key === "z" && this.undoRedoManager.hasHistory()) {
                 if (!this.areaSelection.undo) {
                     console.warn("撤销操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.executeUndo();
             }
             if (event.key === "Delete") {
@@ -3200,10 +3206,12 @@ var script = {
                     console.warn("清空操作被禁用");
                     return;
                 }
+                event.preventDefault();
                 this.clearCells(this.selectedCells, "clear");
                 return;
             }
             if (event.key === "Escape") {
+                event.preventDefault();
                 this.clearCellSelection();
                 this.updateOverlays();
             }
@@ -3871,7 +3879,7 @@ const __vue_script__ = script;
 
 const __vue_inject_styles__ = function(inject) {
     if (!inject) return;
-    inject("data-v-eb20fdd6_0", {
+    inject("data-v-c2638ac6_0", {
         source: "\n.el-table-excel-wrapper {\r\n  outline: none;\n}\r\n/* 选中区域遮罩层样式 */\n.el-table .cell-selection-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  background-color: rgba(64, 158, 255, 0.1);\r\n  border: 1px solid #409eff;\r\n  border-radius: 2px;\n}\r\n\r\n/* 填充小方块 */\n.el-table .cell-selection-overlay .fill-handle {\r\n  pointer-events: auto;\r\n  position: absolute;\r\n  right: 0;\r\n  bottom: 0;\r\n  width: 4px;\r\n  height: 4px;\r\n  background-color: #409eff;\r\n  cursor: crosshair;\r\n  z-index: 3;\r\n  box-sizing: border-box;\r\n  border-radius: 1px;\n}\n.el-table .cell-selection-overlay .fill-handle:hover {\r\n  background-color: #40a9ff;\r\n  transform: scale(1.2);\r\n  box-shadow: 0 0 4px rgba(64, 158, 255, 0.5);\n}\n.el-table .cell-selection-overlay .fill-handle:active {\r\n  background-color: #096dd9;\r\n  transform: scale(1.1);\n}\r\n\r\n/* 复制虚线框样式 */\n.el-table .copy-dash-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  background: transparent;\r\n  border: 2px dashed #409eff;\r\n  border-radius: 2px;\n}\r\n\r\n/* 扩展选中区域样式 */\n.el-table .extended-selection-overlay {\r\n  position: absolute;\r\n  display: none;\r\n  pointer-events: none;\r\n  box-sizing: border-box;\r\n  z-index: 3;\r\n  border: 2px dashed #909399;\r\n  border-radius: 2px;\n}\r\n\r\n/* 左上角全选角标样式 - 三角形设计 */\n.el-table .table-select-all-corner {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  width: 0;\r\n  height: 0;\r\n  border-style: solid;\r\n  border-width: 10px 10px 0 0;\r\n  border-color: #909399 transparent transparent transparent;\r\n  cursor: pointer;\r\n  z-index: 1002;\r\n  box-sizing: border-box;\n}\n.el-table .table-select-all-corner:active {\r\n  border-color: #409eff transparent transparent transparent;\n}\r\n",
         map: undefined,
         media: undefined
