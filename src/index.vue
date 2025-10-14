@@ -518,7 +518,6 @@ export default {
     handleKeyDown(event) {
       const tableEl = this.getTableElement();
       if (!tableEl || this.dTarget) return;
-      event.preventDefault();
       // Ctrl+A 全选
       if (event.ctrlKey && event.key === "a") {
         // 检查全选权限
@@ -526,6 +525,7 @@ export default {
           console.warn("全选操作被禁用");
           return;
         }
+        event.preventDefault();
         // 全选
         const columnCount = getColumnCount(this.getTableElement());
         const rowCount = Math.max(this.rowCount, 1); // 至少选择1行，即使没有数据
@@ -547,6 +547,7 @@ export default {
           console.warn("复制操作被禁用");
           return;
         }
+        event.preventDefault();
         this.copyCellsValues(false, true);
         return;
       }
@@ -558,6 +559,7 @@ export default {
           console.warn("复制操作被禁用");
           return;
         }
+        event.preventDefault();
         this.copyCellsValues();
       }
 
@@ -568,6 +570,7 @@ export default {
           console.warn("剪切操作被禁用");
           return;
         }
+        event.preventDefault();
         this.copyCellsValues(true);
       }
 
@@ -578,6 +581,7 @@ export default {
           console.warn("粘贴操作被禁用");
           return;
         }
+        event.preventDefault();
         this.pasteCellsValues();
       }
 
@@ -591,17 +595,23 @@ export default {
           console.warn("重做操作被禁用");
           return;
         }
+        event.preventDefault();
         this.executeRedo();
         return;
       }
 
       // Ctrl+Z 撤销
-      if (event.ctrlKey && event.key === "z") {
+      if (
+        event.ctrlKey &&
+        event.key === "z" &&
+        this.undoRedoManager.hasHistory()
+      ) {
         // 检查撤销权限
         if (!this.areaSelection.undo) {
           console.warn("撤销操作被禁用");
           return;
         }
+        event.preventDefault();
         this.executeUndo();
       }
 
@@ -612,12 +622,14 @@ export default {
           console.warn("清空操作被禁用");
           return;
         }
+        event.preventDefault();
         this.clearCells(this.selectedCells, "clear");
         return;
       }
 
       // Escape 清除选择
       if (event.key === "Escape") {
+        event.preventDefault();
         this.clearCellSelection();
         this.updateOverlays();
       }
