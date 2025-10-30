@@ -630,7 +630,7 @@ export default {
       // Escape 清除选择
       if (event.key === "Escape") {
         event.preventDefault();
-        this.clearCellSelection();
+        this.clearCellSelection(true);
         this.updateOverlays();
       }
     },
@@ -670,7 +670,7 @@ export default {
       // 检查点击是否在表格内
       if (!isInnerCell(event, tableEl)) {
         // 点击在表格外部，清除所有选中
-        this.clearCellSelection();
+        this.clearCellSelection(true);
         this.dTarget = null;
         this.updateOverlays();
         return;
@@ -1024,9 +1024,9 @@ export default {
     },
 
     // 清除所有单元格选择
-    clearCellSelection() {
+    clearCellSelection(clearCopy = false) {
       this.selectedCells = [];
-      this.copiedCells = [];
+      clearCopy && (this.copiedCells = []);
       this.cellObserver.stopObserving();
     },
 
@@ -1194,8 +1194,6 @@ export default {
           isCutMode: this.isCutMode,
         });
 
-        // 清除复制状态
-        this.copiedCells = [];
         // 更新选中区域到粘贴范围
         this.selectCells(pasteBounds);
         this.updateOverlays();
